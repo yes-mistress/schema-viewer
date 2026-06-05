@@ -3,1098 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schema Builder — CRM</title>
+<title>CRM Technical Review — Developer Hub</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     background: #0d1117;
     color: #e6edf3;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    overflow: hidden;
-    height: 100vh;
-    width: 100vw;
-  }
-
-  /* ── Toolbar ─────────────────────────────────────── */
-  #toolbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 52px;
-    background: #161b22;
-    border-bottom: 1px solid #30363d;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 16px;
-    z-index: 1000;
-    user-select: none;
+    justify-content: center;
+    padding: 40px 24px;
   }
 
-  #toolbar h1 {
-    font-size: 13px;
-    font-weight: 600;
-    color: #c9d1d9;
-    margin-right: 12px;
-    font-family: -apple-system, sans-serif;
-    letter-spacing: -0.01em;
-  }
-
-  .schema-btn {
-    padding: 5px 14px;
-    border-radius: 6px;
-    border: 1px solid #30363d;
-    background: transparent;
-    color: #8b949e;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: -apple-system, sans-serif;
-  }
-  .schema-btn:hover { border-color: #58a6ff; color: #58a6ff; }
-  .schema-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
-
-  .toolbar-sep { width: 1px; height: 24px; background: #30363d; margin: 0 8px; }
-
-  #search {
-    margin-left: auto;
-    padding: 5px 10px;
-    background: #0d1117;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    color: #e6edf3;
-    font-size: 12px;
-    font-family: -apple-system, sans-serif;
-    width: 180px;
-    outline: none;
-  }
-  #search:focus { border-color: #58a6ff; }
-  #search::placeholder { color: #484f58; }
-
-  #zoom-info {
-    font-size: 11px;
-    color: #484f58;
-    margin-left: 12px;
-    font-family: -apple-system, sans-serif;
-    min-width: 48px;
-  }
-
-  .hint {
-    font-size: 11px;
-    color: #484f58;
-    font-family: -apple-system, sans-serif;
-  }
-
-  /* ── Canvas ──────────────────────────────────────── */
-  #canvas-wrap {
-    position: fixed;
-    top: 52px; left: 0; right: 0; bottom: 28px;
-    overflow: hidden;
-    cursor: grab;
-  }
-  #canvas-wrap.panning { cursor: grabbing; }
-
-  #canvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 4000px;
-    height: 3000px;
-    transform-origin: 0 0;
-  }
-
-  #svg-lines {
-    position: absolute;
-    top: 0; left: 0;
+  .hub {
+    max-width: 700px;
     width: 100%;
-    height: 100%;
-    pointer-events: none;
   }
 
-  /* ── Table nodes ─────────────────────────────────── */
-  .table-node {
-    position: absolute;
-    width: 220px;
-    border-radius: 8px;
-    border: 1px solid #30363d;
-    background: #161b22;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    cursor: grab;
-    user-select: none;
-    transition: box-shadow 0.15s, border-color 0.15s;
-  }
-  .table-node:hover { border-color: #58a6ff66; }
-  .table-node.active { border-color: #58a6ff; box-shadow: 0 0 0 2px #1f6feb44, 0 8px 32px rgba(0,0,0,0.6); }
-  .table-node.dimmed { opacity: 0.25; }
-  .table-node.dragging { cursor: grabbing; box-shadow: 0 12px 48px rgba(0,0,0,0.7); z-index: 100; }
-
-  .table-header {
-    padding: 8px 10px;
-    border-radius: 7px 7px 0 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 600;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: grab;
+  .label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: #58a6ff; margin-bottom: 12px;
   }
 
-  .table-header .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  h1 {
+    font-size: 28px; font-weight: 700;
+    line-height: 1.2; letter-spacing: -0.02em;
+    margin-bottom: 12px;
   }
 
-  .table-header .table-name {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 11px;
+  .subtitle {
+    font-size: 15px; color: #8b949e;
+    line-height: 1.6; margin-bottom: 8px;
   }
 
-  .table-header .row-count {
-    font-size: 9px;
-    opacity: 0.6;
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-  }
-
-  .table-fields {
-    border-top: 1px solid #21262d;
-  }
-
-  .field-row {
-    padding: 3px 10px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  .context {
+    font-size: 13px; color: #484f58;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
     border-bottom: 1px solid #21262d;
-    transition: background 0.1s;
   }
-  .field-row:last-child { border-bottom: none; }
-  .field-row:hover { background: #1c2128; }
 
-  .field-badge {
-    font-size: 8px;
-    font-weight: 700;
-    padding: 1px 3px;
-    border-radius: 3px;
-    flex-shrink: 0;
-    letter-spacing: 0.05em;
-    font-family: -apple-system, sans-serif;
+  .context strong { color: #6e7681; }
+
+  /* ── Cards ─────────────────────────────────── */
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
   }
-  .pk  { background: #ffa65733; color: #ffa657; }
-  .fk  { background: #58a6ff22; color: #58a6ff; }
-  .uniq{ background: #3fb95022; color: #3fb950; }
 
-  .field-name {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 11px;
+  .card {
+    display: block;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: pointer;
+  }
+  .card:hover {
+    border-color: #58a6ff66;
+    background: #1c2128;
+  }
+
+  .card-icon {
+    font-size: 22px; margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 6px; color: #e6edf3;
+  }
+
+  .card-desc {
+    font-size: 13px; color: #8b949e;
+    line-height: 1.5;
+  }
+
+  .card-tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 20px;
+  }
+
+  .tag-read   { background: #58a6ff22; color: #58a6ff; }
+  .tag-interact { background: #bc8cff22; color: #bc8cff; }
+  .tag-download { background: #3fb95022; color: #3fb950; }
+
+  /* Full-width card */
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* ── Context box ─────────────────────────── */
+  .context-box {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+
+  .context-box h2 {
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #484f58; margin-bottom: 14px;
+  }
+
+  .context-box p {
+    font-size: 13px; color: #8b949e;
+    line-height: 1.7; margin-bottom: 10px;
+  }
+
+  .context-box p:last-child { margin-bottom: 0; }
+
+  .context-box ul {
+    padding-left: 18px; margin-top: 8px;
+  }
+
+  .context-box li {
+    font-size: 13px; color: #8b949e;
+    margin-bottom: 5px; line-height: 1.5;
+  }
+
+  .context-box code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    background: #21262d;
+    padding: 1px 5px; border-radius: 4px;
     color: #c9d1d9;
   }
 
-  .field-type {
-    font-size: 10px;
-    color: #484f58;
-    flex-shrink: 0;
+  /* ── Questions ───────────────────────────── */
+  .questions {
+    background: #1f2937;
+    border: 1px solid #1f6feb44;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-top: 24px;
   }
 
-  .field-missing {
-    background: #ff7b7211;
-    border-left: 2px solid #ff7b72;
-  }
-  .field-missing .field-name { color: #ff7b72; }
-
-  /* ── Legend / Status bar ─────────────────────────── */
-  #statusbar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 28px;
-    background: #161b22;
-    border-top: 1px solid #30363d;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 0 16px;
-    z-index: 1000;
+  .questions h2 {
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #58a6ff; margin-bottom: 14px;
   }
 
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-family: -apple-system, sans-serif;
-    font-size: 11px;
-    color: #8b949e;
-  }
-  .legend-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
+  .questions ol {
+    padding-left: 20px;
   }
 
-  /* ── SVG lines ───────────────────────────────────── */
-  .relation-line {
-    fill: none;
-    stroke: #30363d;
-    stroke-width: 1.5;
-    transition: stroke 0.15s, stroke-width 0.15s;
-  }
-  .relation-line.active {
-    stroke: #58a6ff;
-    stroke-width: 2;
-  }
-  .relation-line.missing {
-    stroke: #ff7b72;
-    stroke-dasharray: 4 3;
-    stroke-width: 1.5;
+  .questions li {
+    font-size: 14px; color: #c9d1d9;
+    margin-bottom: 8px; line-height: 1.6;
   }
 
-  .relation-arrow {
-    fill: #30363d;
+  /* ── Footer ──────────────────────────────── */
+  .footer {
+    margin-top: 32px;
+    font-size: 12px; color: #30363d;
+    text-align: center;
   }
-  .relation-arrow.active { fill: #58a6ff; }
 
-  /* ── Reset button ────────────────────────────────── */
-  #reset-btn {
-    padding: 3px 10px;
-    border-radius: 5px;
-    border: 1px solid #30363d;
-    background: transparent;
-    color: #8b949e;
-    font-size: 11px;
-    cursor: pointer;
-    font-family: -apple-system, sans-serif;
-    transition: all 0.15s;
-    margin-left: 4px;
+  @media (max-width: 520px) {
+    .cards { grid-template-columns: 1fr; }
+    .card-wide { grid-column: auto; }
+    h1 { font-size: 22px; }
   }
-  #reset-btn:hover { border-color: #58a6ff; color: #58a6ff; }
 </style>
 </head>
 <body>
 
-<div id="toolbar">
-  <h1>⬡ Schema Viewer</h1>
-  <button class="schema-btn active" onclick="switchSchema('clare')">Clare's CRM</button>
-  <button class="schema-btn" onclick="switchSchema('josephine')">Josephine's CRM</button>
-  <button class="schema-btn" onclick="switchSchema('merged')">Merged View</button>
-  <div class="toolbar-sep"></div>
-  <button id="reset-btn" onclick="resetLayout()">Reset layout</button>
-  <span class="hint">Drag tables · Scroll to zoom · Drag canvas to pan · Click table to highlight</span>
-  <input id="search" placeholder="Search tables…" oninput="filterTables(this.value)">
-  <span id="zoom-info">100%</span>
-</div>
+<div class="hub">
 
-<div id="canvas-wrap">
-  <div id="canvas">
-    <svg id="svg-lines">
-      <defs>
-        <marker id="arrow-default" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L6,3 z" class="relation-arrow" />
-        </marker>
-        <marker id="arrow-active" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L6,3 z" class="relation-arrow active" />
-        </marker>
-        <marker id="arrow-missing" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L6,3 z" fill="#ff7b72" />
-        </marker>
-      </defs>
-    </svg>
+  <div class="label">Developer Briefing — June 2026</div>
+  <h1>Sextech CRM Platform<br>Technical Review</h1>
+  <p class="subtitle">An independent escort and dominatrix CRM built as a multi-tenant SaaS. This hub contains the strategy report, interactive schema diagrams, and a sample data export.</p>
+  <p class="context"><strong>Context:</strong> Two parallel builds exist — one built with Claude (Next.js + Supabase + Vercel, ~40hrs) and one built on Lovable (also Supabase-backed). The goal is to merge the better UI of the Lovable build with the stronger infrastructure of the custom build. Advice is sought on architecture, WhatsApp integration strategy, and security.</p>
+
+  <!-- ── Context box ─────────────────────────────────── -->
+  <div class="context-box">
+    <h2>Tech stack</h2>
+    <p><strong style="color:#c9d1d9">Custom build:</strong> Next.js 16 · TypeScript · Supabase (PostgreSQL + Auth + RLS) · Vercel · Baileys (WhatsApp QR bridge)</p>
+    <p><strong style="color:#c9d1d9">Lovable build:</strong> Lovable (React) · Supabase · Vercel</p>
+    <p><strong style="color:#c9d1d9">Key constraints:</strong></p>
+    <ul>
+      <li>Meta/WhatsApp is a platform risk — official API creates visibility with Meta, which has deplatformed sextech firms</li>
+      <li>Stripe and PayPal typically refuse sex work adjacent businesses</li>
+      <li>GDPR applies — users are in France and Switzerland, data is sensitive</li>
+      <li>FOSTA-SESTA creates US payment processor exposure</li>
+      <li>WhatsApp integration must be seamless for end users from day one (non-negotiable requirement)</li>
+    </ul>
   </div>
+
+  <!-- ── Resource cards ─────────────────────────────── -->
+  <div class="cards">
+
+    <a href="report.html" class="card">
+      <div class="card-icon">📄</div>
+      <div class="card-title">Strategy Report</div>
+      <div class="card-desc">Full advisory covering platform decision, WhatsApp integration, payments, schema, feature priorities, security, and business model. Available in English and French.</div>
+      <span class="card-tag tag-read">Read</span>
+    </a>
+
+    <a href="schema.html" class="card">
+      <div class="card-icon">⬡</div>
+      <div class="card-title">Schema Viewer</div>
+      <div class="card-desc">Interactive diagram of both database schemas — Clare's custom build and Josephine's Lovable build — with a merged comparison view. Drag tables, click to highlight relations.</div>
+      <span class="card-tag tag-interact">Interactive</span>
+    </a>
+
+    <a href="crm-schema-sample.json" download class="card card-wide">
+      <div class="card-icon">⬇</div>
+      <div class="card-title">Sample Data Export — Josephine's CRM (JSON)</div>
+      <div class="card-desc">Anonymised export from the Lovable build. Contains 4 contacts, 20 opportunities, and 3 services with realistic field values. All names and phone numbers are fictitious. Shows the exact schema in use including probability weighting, service snapshots, and status vocabulary.</div>
+      <span class="card-tag tag-download">Download · JSON · ~20kb</span>
+    </a>
+
+  </div>
+
+  <!-- ── Questions ──────────────────────────────────── -->
+  <div class="questions">
+    <h2>We are asking</h2>
+    <ol>
+      <li>Is the QR bridge approach (Baileys / WhatsApp Web) a defensible long-term architecture, or a liability we should plan to replace?</li>
+      <li>What is the right sequence for merging the Lovable frontend with the existing custom backend — export Lovable code first, then integrate, or rebuild the UI on the custom stack?</li>
+      <li>What security or privacy gaps are we missing given the sensitivity of this data and the population it serves?</li>
+      <li>Are there WhatsApp integration approaches we have not considered that give seamless UX without Meta visibility?</li>
+      <li>Given the payment processor constraints, what billing infrastructure would you design for a European sextech SaaS at this stage?</li>
+    </ol>
+  </div>
+
+  <div class="footer">Confidential — shared for technical advisory purposes only</div>
+
 </div>
 
-<div id="statusbar">
-  <span class="legend-item"><span class="legend-dot" style="background:#6e40c9"></span>Auth/Tenant</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>Contacts</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>Messaging</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#f97316"></span>Bookings</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span>Services</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#ec4899"></span>Practices</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#eab308"></span>Automations</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>Safety</span>
-</div>
-
-<script>
-// ── Domain colours ────────────────────────────────────────────────
-const DOMAINS = {
-  auth:        { color: '#6e40c9', bg: '#6e40c920' },
-  contacts:    { color: '#8b5cf6', bg: '#8b5cf620' },
-  messaging:   { color: '#3b82f6', bg: '#3b82f620' },
-  bookings:    { color: '#f97316', bg: '#f9731620' },
-  services:    { color: '#10b981', bg: '#10b98120' },
-  practices:   { color: '#ec4899', bg: '#ec489920' },
-  automations: { color: '#eab308', bg: '#eab30820' },
-  safety:      { color: '#ef4444', bg: '#ef444420' },
-};
-
-// ── Schema definitions ────────────────────────────────────────────
-const SCHEMAS = {
-
-  // ── CLARE ──────────────────────────────────────────────────────
-  clare: {
-    tables: [
-      { id:'profiles', domain:'auth', x:700, y:40, fields:[
-        {n:'id',         t:'uuid',  pk:true},
-        {n:'user_id',    t:'uuid',  fk:'auth.users'},
-        {n:'full_name',  t:'text'},
-        {n:'email',      t:'text'},
-        {n:'form_token', t:'text',  uniq:true},
-        {n:'form_tagline',t:'text'},
-        {n:'form_bio',   t:'text'},
-        {n:'form_header_image',t:'text'},
-      ]},
-
-      { id:'contacts', domain:'contacts', x:40, y:200, fields:[
-        {n:'id',             t:'uuid', pk:true},
-        {n:'user_id',        t:'uuid', fk:'profiles'},
-        {n:'name',           t:'text'},
-        {n:'real_name',      t:'text'},
-        {n:'nickname_client',t:'text'},
-        {n:'nickname_provider',t:'text'},
-        {n:'phone',          t:'text'},
-        {n:'email',          t:'text'},
-        {n:'telegram_username',t:'text'},
-        {n:'age_group',      t:'text'},
-        {n:'acquisition_channel',t:'text'},
-        {n:'safety_status',  t:'text'},
-        {n:'safety_notes',   t:'text'},
-        {n:'is_blacklisted', t:'bool'},
-        {n:'blacklist_reason',t:'text'},
-        {n:'is_time_waster', t:'bool'},
-        {n:'time_waster_notes',t:'text'},
-        {n:'deposit_paid',   t:'bool'},
-        {n:'deposit_amount', t:'numeric'},
-        {n:'id_verified',    t:'bool'},
-        {n:'references_provided',t:'bool'},
-        {n:'screening_notes',t:'text'},
-        {n:'practice_tags',  t:'text[]'},
-      ]},
-
-      { id:'tags', domain:'contacts', x:40, y:820, fields:[
-        {n:'id',      t:'uuid', pk:true},
-        {n:'user_id', t:'uuid', fk:'profiles'},
-        {n:'name',    t:'text'},
-        {n:'color',   t:'text'},
-      ]},
-
-      { id:'contact_tags', domain:'contacts', x:300, y:820, fields:[
-        {n:'id',         t:'uuid', pk:true},
-        {n:'contact_id', t:'uuid', fk:'contacts'},
-        {n:'tag_id',     t:'uuid', fk:'tags'},
-        {n:'status',     t:'text', note:'yes/maybe/no'},
-      ]},
-
-      { id:'contact_notes', domain:'contacts', x:560, y:820, fields:[
-        {n:'id',         t:'uuid', pk:true},
-        {n:'contact_id', t:'uuid', fk:'contacts'},
-        {n:'user_id',    t:'uuid', fk:'profiles'},
-        {n:'note_text',  t:'text'},
-        {n:'created_at', t:'ts'},
-      ]},
-
-      { id:'custom_fields', domain:'contacts', x:820, y:820, fields:[
-        {n:'id',         t:'uuid', pk:true},
-        {n:'user_id',    t:'uuid', fk:'profiles'},
-        {n:'field_name', t:'text'},
-        {n:'field_type', t:'text'},
-        {n:'field_options',t:'jsonb'},
-      ]},
-
-      { id:'contact_custom_values', domain:'contacts', x:1080, y:820, fields:[
-        {n:'id',              t:'uuid', pk:true},
-        {n:'contact_id',      t:'uuid', fk:'contacts'},
-        {n:'custom_field_id', t:'uuid', fk:'custom_fields'},
-        {n:'value',           t:'text'},
-      ]},
-
-      { id:'conversations', domain:'messaging', x:40, y:1200, fields:[
-        {n:'id',               t:'uuid', pk:true},
-        {n:'user_id',          t:'uuid', fk:'profiles'},
-        {n:'contact_id',       t:'uuid', fk:'contacts'},
-        {n:'status',           t:'text', note:'open/pending/closed'},
-        {n:'assigned_agent_id',t:'uuid', fk:'profiles'},
-        {n:'last_message_text',t:'text'},
-        {n:'last_message_at',  t:'ts'},
-        {n:'unread_count',     t:'int'},
-      ]},
-
-      { id:'messages', domain:'messaging', x:300, y:1200, fields:[
-        {n:'id',                 t:'uuid', pk:true},
-        {n:'conversation_id',    t:'uuid', fk:'conversations'},
-        {n:'sender_type',        t:'text', note:'agent/contact'},
-        {n:'content_type',       t:'text'},
-        {n:'content_text',       t:'text'},
-        {n:'media_url',          t:'text'},
-        {n:'message_id',         t:'text'},
-        {n:'status',             t:'text'},
-        {n:'reply_to_message_id',t:'uuid', fk:'messages'},
-      ]},
-
-      { id:'whatsapp_config', domain:'messaging', x:560, y:1200, fields:[
-        {n:'id',              t:'uuid', pk:true},
-        {n:'user_id',         t:'uuid', fk:'profiles', uniq:true},
-        {n:'phone_number_id', t:'text'},
-        {n:'waba_id',         t:'text'},
-        {n:'access_token',    t:'text', note:'🔒 encrypted'},
-        {n:'verify_token',    t:'text', note:'🔒 encrypted'},
-        {n:'status',          t:'text'},
-        {n:'connection_type', t:'text', note:'meta/bridge'},
-      ]},
-
-      { id:'bridge_queue', domain:'messaging', x:820, y:1200, fields:[
-        {n:'id',            t:'uuid', pk:true},
-        {n:'user_id',       t:'uuid', fk:'profiles'},
-        {n:'conversation_id',t:'uuid', fk:'conversations'},
-        {n:'crm_message_id',t:'uuid', fk:'messages'},
-        {n:'to_phone',      t:'text'},
-        {n:'message',       t:'text'},
-        {n:'wa_message_id', t:'text'},
-        {n:'status',        t:'text'},
-        {n:'error',         t:'text'},
-      ]},
-
-      { id:'message_templates', domain:'messaging', x:1080, y:1200, fields:[
-        {n:'id',       t:'uuid', pk:true},
-        {n:'user_id',  t:'uuid', fk:'profiles'},
-        {n:'name',     t:'text'},
-        {n:'content',  t:'text'},
-        {n:'created_at',t:'ts'},
-      ]},
-
-      { id:'pipelines', domain:'bookings', x:40, y:1660, fields:[
-        {n:'id',       t:'uuid', pk:true},
-        {n:'user_id',  t:'uuid', fk:'profiles'},
-        {n:'name',     t:'text'},
-        {n:'created_at',t:'ts'},
-      ]},
-
-      { id:'pipeline_stages', domain:'bookings', x:300, y:1660, fields:[
-        {n:'id',          t:'uuid', pk:true},
-        {n:'pipeline_id', t:'uuid', fk:'pipelines'},
-        {n:'name',        t:'text'},
-        {n:'position',    t:'int'},
-        {n:'color',       t:'text'},
-      ]},
-
-      { id:'deals', domain:'bookings', x:560, y:1560, fields:[
-        {n:'id',              t:'uuid', pk:true},
-        {n:'user_id',         t:'uuid', fk:'profiles'},
-        {n:'pipeline_id',     t:'uuid', fk:'pipelines'},
-        {n:'stage_id',        t:'uuid', fk:'pipeline_stages'},
-        {n:'contact_id',      t:'uuid', fk:'contacts'},
-        {n:'conversation_id', t:'uuid', fk:'conversations'},
-        {n:'service_id',      t:'uuid', fk:'services'},
-        {n:'title',           t:'text'},
-        {n:'value',           t:'numeric'},
-        {n:'currency',        t:'text'},
-        {n:'discount_amount', t:'numeric'},
-        {n:'tip_amount',      t:'numeric'},
-        {n:'status',          t:'text', note:'open/won/lost'},
-        {n:'rating',          t:'smallint'},
-        {n:'expected_close_date',t:'date'},
-        {n:'start_time',      t:'time'},
-        {n:'end_time',        t:'time'},
-        {n:'location_type',   t:'text'},
-        {n:'location_address',t:'text'},
-        {n:'notes',           t:'text'},
-        {n:'assigned_to',     t:'uuid', fk:'profiles'},
-      ]},
-
-      { id:'services', domain:'services', x:40, y:2100, fields:[
-        {n:'id',         t:'uuid', pk:true},
-        {n:'user_id',    t:'uuid', fk:'profiles'},
-        {n:'name',       t:'text'},
-        {n:'category',   t:'text'},
-        {n:'duration',   t:'text'},
-        {n:'base_price', t:'numeric'},
-        {n:'currency',   t:'text'},
-        {n:'is_active',  t:'bool'},
-        {n:'description',t:'text'},
-      ]},
-
-      { id:'service_practices', domain:'practices', x:300, y:2100, fields:[
-        {n:'id',          t:'uuid', pk:true},
-        {n:'service_id',  t:'uuid', fk:'services'},
-        {n:'practice_id', t:'uuid', fk:'practices'},
-      ]},
-
-      { id:'practices', domain:'practices', x:560, y:2100, fields:[
-        {n:'id',         t:'uuid', pk:true},
-        {n:'name',       t:'text', uniq:true},
-        {n:'category',   t:'text'},
-        {n:'sort_order', t:'int'},
-      ]},
-
-      { id:'provider_practices', domain:'practices', x:820, y:2100, fields:[
-        {n:'id',          t:'uuid', pk:true},
-        {n:'user_id',     t:'uuid', fk:'profiles'},
-        {n:'practice_id', t:'uuid', fk:'practices'},
-        {n:'status',      t:'text', note:'yes/no/maybe'},
-        {n:'notes',       t:'text'},
-      ]},
-
-      { id:'contact_practices', domain:'practices', x:1080, y:2100, fields:[
-        {n:'id',          t:'uuid', pk:true},
-        {n:'contact_id',  t:'uuid', fk:'contacts'},
-        {n:'practice_id', t:'uuid', fk:'practices'},
-      ]},
-
-      { id:'automations', domain:'automations', x:1400, y:200, fields:[
-        {n:'id',      t:'uuid', pk:true},
-        {n:'user_id', t:'uuid', fk:'profiles'},
-        {n:'name',    t:'text'},
-        {n:'trigger', t:'text'},
-        {n:'is_active',t:'bool'},
-      ]},
-
-      { id:'automation_steps', domain:'automations', x:1400, y:500, fields:[
-        {n:'id',             t:'uuid', pk:true},
-        {n:'automation_id',  t:'uuid', fk:'automations'},
-        {n:'step_order',     t:'int'},
-        {n:'action_type',    t:'text'},
-        {n:'action_config',  t:'jsonb'},
-      ]},
-
-      { id:'automation_logs', domain:'automations', x:1660, y:500, fields:[
-        {n:'id',            t:'uuid', pk:true},
-        {n:'automation_id', t:'uuid', fk:'automations'},
-        {n:'contact_id',    t:'uuid', fk:'contacts'},
-        {n:'status',        t:'text'},
-        {n:'executed_at',   t:'ts'},
-      ]},
-
-      { id:'flows', domain:'automations', x:1400, y:800, fields:[
-        {n:'id',       t:'uuid', pk:true},
-        {n:'user_id',  t:'uuid', fk:'profiles'},
-        {n:'name',     t:'text'},
-        {n:'is_active',t:'bool'},
-      ]},
-
-      { id:'flow_nodes', domain:'automations', x:1660, y:800, fields:[
-        {n:'id',       t:'uuid', pk:true},
-        {n:'flow_id',  t:'uuid', fk:'flows'},
-        {n:'type',     t:'text'},
-        {n:'config',   t:'jsonb'},
-        {n:'position', t:'jsonb'},
-      ]},
-
-      { id:'flow_runs', domain:'automations', x:1400, y:1080, fields:[
-        {n:'id',         t:'uuid', pk:true},
-        {n:'flow_id',    t:'uuid', fk:'flows'},
-        {n:'contact_id', t:'uuid', fk:'contacts'},
-        {n:'status',     t:'text'},
-        {n:'started_at', t:'ts'},
-        {n:'ended_at',   t:'ts'},
-        {n:'end_reason', t:'text'},
-      ]},
-
-      { id:'broadcasts', domain:'automations', x:1660, y:1080, fields:[
-        {n:'id',          t:'uuid', pk:true},
-        {n:'user_id',     t:'uuid', fk:'profiles'},
-        {n:'name',        t:'text'},
-        {n:'status',      t:'text'},
-        {n:'sent_count',  t:'int'},
-        {n:'failed_count',t:'int'},
-      ]},
-    ],
-    relations: [
-      {from:'contacts',           to:'profiles',        label:'user_id'},
-      {from:'tags',               to:'profiles',        label:'user_id'},
-      {from:'contact_tags',       to:'contacts',        label:'contact_id'},
-      {from:'contact_tags',       to:'tags',            label:'tag_id'},
-      {from:'contact_notes',      to:'contacts',        label:'contact_id'},
-      {from:'custom_fields',      to:'profiles',        label:'user_id'},
-      {from:'contact_custom_values',to:'contacts',      label:'contact_id'},
-      {from:'contact_custom_values',to:'custom_fields', label:'custom_field_id'},
-      {from:'conversations',      to:'contacts',        label:'contact_id'},
-      {from:'messages',           to:'conversations',   label:'conversation_id'},
-      {from:'whatsapp_config',    to:'profiles',        label:'user_id'},
-      {from:'bridge_queue',       to:'conversations',   label:'conversation_id'},
-      {from:'pipelines',          to:'profiles',        label:'user_id'},
-      {from:'pipeline_stages',    to:'pipelines',       label:'pipeline_id'},
-      {from:'deals',              to:'pipeline_stages', label:'stage_id'},
-      {from:'deals',              to:'contacts',        label:'contact_id'},
-      {from:'deals',              to:'services',        label:'service_id'},
-      {from:'deals',              to:'conversations',   label:'conversation_id'},
-      {from:'services',           to:'profiles',        label:'user_id'},
-      {from:'service_practices',  to:'services',        label:'service_id'},
-      {from:'service_practices',  to:'practices',       label:'practice_id'},
-      {from:'provider_practices', to:'practices',       label:'practice_id'},
-      {from:'contact_practices',  to:'contacts',        label:'contact_id'},
-      {from:'contact_practices',  to:'practices',       label:'practice_id'},
-      {from:'automations',        to:'profiles',        label:'user_id'},
-      {from:'automation_steps',   to:'automations',     label:'automation_id'},
-      {from:'automation_logs',    to:'automations',     label:'automation_id'},
-      {from:'flows',              to:'profiles',        label:'user_id'},
-      {from:'flow_nodes',         to:'flows',           label:'flow_id'},
-      {from:'flow_runs',          to:'flows',           label:'flow_id'},
-      {from:'flow_runs',          to:'contacts',        label:'contact_id'},
-      {from:'broadcasts',         to:'profiles',        label:'user_id'},
-    ],
-  },
-
-  // ── JOSEPHINE ──────────────────────────────────────────────────
-  josephine: {
-    tables: [
-      { id:'contacts', domain:'contacts', x:100, y:100, fields:[
-        {n:'id',              t:'uuid', pk:true},
-        {n:'nickname',        t:'text', note:'what you call them'},
-        {n:'fake_name',       t:'text', note:'name they gave you'},
-        {n:'real_name',       t:'text', note:'verified name'},
-        {n:'phone',           t:'text'},
-        {n:'photo_url',       t:'text'},
-        {n:'age',             t:'int'},
-        {n:'age_range',       t:'text'},
-        {n:'city',            t:'text'},
-        {n:'language',        t:'text'},
-        {n:'payment_method',  t:'text'},
-        {n:'preferred_slot',  t:'text'},
-        {n:'ad_platform',     t:'text'},
-        {n:'contact_channel', t:'text'},
-        {n:'kind',            t:'text', note:'contact/prospect'},
-        {n:'seriousness',     t:'1–5'},
-        {n:'quality',         t:'1–5'},
-        {n:'status',          t:'text', note:'Safe/Nouveau/Blacklisté'},
-        {n:'blacklist_reason',t:'text'},
-        {n:'blacklist_date',  t:'ts'},
-        {n:'intention_note',  t:'text'},
-        {n:'tags',            t:'text[]', note:'flat array'},
-      ]},
-
-      { id:'opportunities', domain:'bookings', x:460, y:100, fields:[
-        {n:'id',                   t:'uuid', pk:true},
-        {n:'contact_id',           t:'uuid', fk:'contacts'},
-        {n:'service_id',           t:'uuid', fk:'services'},
-        {n:'service_name_snapshot',t:'text', note:'preserved name'},
-        {n:'expected_date',        t:'date'},
-        {n:'expected_time',        t:'time'},
-        {n:'duration',             t:'text'},
-        {n:'price',                t:'numeric'},
-        {n:'currency',             t:'text'},
-        {n:'probability',          t:'0–100', note:'for forecast'},
-        {n:'status',               t:'text', note:'Honoré/Réservé/Annulé…'},
-        {n:'location',             t:'text'},
-        {n:'practical_info',       t:'text'},
-        {n:'notes',                t:'text'},
-        {n:'tags',                 t:'text[]'},
-        {n:'notes_list',           t:'jsonb[]'},
-        {n:'attachments',          t:'jsonb[]'},
-        {n:'is_duo',               t:'bool'},
-        {n:'duo_with',             t:'uuid', fk:'contacts'},
-      ]},
-
-      { id:'services', domain:'services', x:460, y:680, fields:[
-        {n:'id',          t:'uuid', pk:true},
-        {n:'name',        t:'text'},
-        {n:'price',       t:'numeric'},
-        {n:'currency',    t:'text'},
-        {n:'duration',    t:'text'},
-        {n:'category',    t:'text', note:'multi-select'},
-        {n:'is_active',   t:'bool'},
-        {n:'description', t:'text'},
-        {n:'practice_id', t:'uuid', fk:'practices'},
-      ]},
-
-      { id:'practices', domain:'practices', x:460, y:980, fields:[
-        {n:'id',       t:'uuid', pk:true},
-        {n:'name',     t:'text'},
-        {n:'category', t:'text'},
-        {n:'sort_order',t:'int'},
-      ]},
-
-      { id:'safety_contacts', domain:'safety', x:900, y:100, fields:[
-        {n:'id',                  t:'uuid', pk:true},
-        {n:'user_id',             t:'uuid'},
-        {n:'name',                t:'text'},
-        {n:'phone',               t:'text'},
-        {n:'email',               t:'text'},
-        {n:'availability',        t:'text'},
-        {n:'notification_method', t:'text'},
-      ]},
-
-      { id:'check_ins', domain:'safety', x:900, y:460, fields:[
-        {n:'id',                  t:'uuid', pk:true},
-        {n:'user_id',             t:'uuid'},
-        {n:'opportunity_id',      t:'uuid', fk:'opportunities'},
-        {n:'status',              t:'text', note:'prepared/active/done/overdue'},
-        {n:'started_at',          t:'ts'},
-        {n:'expected_end',        t:'ts'},
-        {n:'grace_delay_minutes', t:'int'},
-        {n:'share_location',      t:'bool'},
-        {n:'location_shared',     t:'text'},
-      ]},
-
-      { id:'check_in_contacts', domain:'safety', x:900, y:820, fields:[
-        {n:'id',                t:'uuid', pk:true},
-        {n:'check_in_id',       t:'uuid', fk:'check_ins'},
-        {n:'safety_contact_id', t:'uuid', fk:'safety_contacts'},
-        {n:'ping_sent_at',      t:'ts'},
-        {n:'response_status',   t:'text'},
-      ]},
-    ],
-    relations: [
-      {from:'opportunities',      to:'contacts',         label:'contact_id'},
-      {from:'opportunities',      to:'services',         label:'service_id'},
-      {from:'opportunities',      to:'contacts',         label:'duo_with'},
-      {from:'services',           to:'practices',        label:'practice_id'},
-      {from:'check_ins',          to:'opportunities',    label:'opportunity_id'},
-      {from:'check_in_contacts',  to:'check_ins',        label:'check_in_id'},
-      {from:'check_in_contacts',  to:'safety_contacts',  label:'safety_contact_id'},
-    ],
-  },
-
-  // ── MERGED (Clare base + Josephine additions marked) ──────────
-  merged: { tables: [], relations: [] },
-};
-
-// Build merged = Clare's tables with Josephine-only fields highlighted
-SCHEMAS.merged.tables = SCHEMAS.clare.tables.map(t => ({...t, fields: [...t.fields]}));
-SCHEMAS.merged.relations = [...SCHEMAS.clare.relations];
-
-// Add Josephine's tables that don't exist in Clare's
-const clareTableIds = new Set(SCHEMAS.clare.tables.map(t => t.id));
-for (const jt of SCHEMAS.josephine.tables) {
-  if (!clareTableIds.has(jt.id)) {
-    SCHEMAS.merged.tables.push({
-      ...jt,
-      x: jt.x + 1800, y: jt.y,
-      missing: true,  // marks as "Josephine only, not yet in Clare"
-    });
-    for (const r of SCHEMAS.josephine.relations) {
-      if (r.from === jt.id || r.to === jt.id) {
-        SCHEMAS.merged.relations.push({...r, missing: true});
-      }
-    }
-  }
-}
-
-// Mark Josephine fields missing from Clare's contacts
-const clareContacts = SCHEMAS.merged.tables.find(t => t.id === 'contacts');
-const josephineContactFields = ['nickname','fake_name','real_name','seriousness','quality','language','payment_method','preferred_slot','age_range','age','contact_channel','ad_platform','kind'];
-const clareFieldNames = new Set(clareContacts.fields.map(f => f.n));
-for (const fn of josephineContactFields) {
-  if (!clareFieldNames.has(fn)) {
-    clareContacts.fields.push({n: fn, t:'—', missing: true});
-  }
-}
-
-// Mark missing fields on deals
-const clareDeals = SCHEMAS.merged.tables.find(t => t.id === 'deals');
-for (const fn of ['probability','duration','service_name_snapshot','is_duo','duo_with']) {
-  clareDeals.fields.push({n: fn, t:'—', missing: true});
-}
-
-// ── State ─────────────────────────────────────────────────────────
-let currentSchema = 'clare';
-let positions = {};
-let activeTable = null;
-let zoom = 1;
-let panX = 0, panY = 0;
-let isPanning = false, panStartX = 0, panStartY = 0, panOriginX = 0, panOriginY = 0;
-let isDragging = false, dragNode = null, dragStartX = 0, dragStartY = 0, dragOriginX = 0, dragOriginY = 0;
-
-const canvas = document.getElementById('canvas');
-const svgEl  = document.getElementById('svg-lines');
-const wrap   = document.getElementById('canvas-wrap');
-const zoomInfo = document.getElementById('zoom-info');
-
-// ── Init positions ────────────────────────────────────────────────
-function initPositions(schemaId) {
-  if (!positions[schemaId]) {
-    positions[schemaId] = {};
-    for (const t of SCHEMAS[schemaId].tables) {
-      positions[schemaId][t.id] = { x: t.x, y: t.y };
-    }
-  }
-}
-
-// ── Render ────────────────────────────────────────────────────────
-function render() {
-  const schema = SCHEMAS[currentSchema];
-  initPositions(currentSchema);
-  const pos = positions[currentSchema];
-
-  // Clear existing table nodes
-  document.querySelectorAll('.table-node').forEach(el => el.remove());
-  svgEl.innerHTML = `<defs>
-    <marker id="arrow-default" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L6,3 z" fill="#30363d"/>
-    </marker>
-    <marker id="arrow-active" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L6,3 z" fill="#58a6ff"/>
-    </marker>
-    <marker id="arrow-missing" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L6,3 z" fill="#ff7b72"/>
-    </marker>
-  </defs>`;
-
-  // Render tables
-  for (const table of schema.tables) {
-    const d = DOMAINS[table.domain] || DOMAINS.contacts;
-    const p = pos[table.id];
-    const node = document.createElement('div');
-    node.className = 'table-node' + (table.missing ? ' missing-table' : '');
-    node.id = 'node-' + table.id;
-    node.style.left = p.x + 'px';
-    node.style.top  = p.y + 'px';
-    if (table.missing) node.style.borderColor = '#ff7b7255';
-
-    const header = document.createElement('div');
-    header.className = 'table-header';
-    header.style.background = d.bg;
-    header.style.color = d.color;
-    header.innerHTML = `
-      <span class="dot" style="background:${d.color}"></span>
-      <span class="table-name">${table.id}</span>
-      ${table.missing ? '<span style="font-size:9px;opacity:0.7;text-transform:none;letter-spacing:0;font-family:-apple-system,sans-serif">⚠ add to Clare</span>' : ''}
-    `;
-
-    const fieldsDiv = document.createElement('div');
-    fieldsDiv.className = 'table-fields';
-    for (const f of table.fields) {
-      const row = document.createElement('div');
-      row.className = 'field-row' + (f.missing ? ' field-missing' : '');
-      let badge = '';
-      if (f.pk)   badge = '<span class="field-badge pk">PK</span>';
-      else if (f.fk)   badge = '<span class="field-badge fk">FK</span>';
-      else if (f.uniq) badge = '<span class="field-badge uniq">UQ</span>';
-      row.innerHTML = `${badge}<span class="field-name">${f.n}</span><span class="field-type">${f.t}</span>`;
-      fieldsDiv.appendChild(row);
-    }
-
-    node.appendChild(header);
-    node.appendChild(fieldsDiv);
-    canvas.appendChild(node);
-
-    // Click to highlight
-    node.addEventListener('mousedown', e => {
-      if (e.button !== 0) return;
-      e.stopPropagation();
-      // Start drag
-      isDragging = true;
-      dragNode = table.id;
-      dragStartX = e.clientX;
-      dragStartY = e.clientY;
-      dragOriginX = p.x;
-      dragOriginY = p.y;
-      node.classList.add('dragging');
-    });
-
-    node.addEventListener('click', e => {
-      e.stopPropagation();
-      if (activeTable === table.id) {
-        activeTable = null;
-      } else {
-        activeTable = table.id;
-      }
-      updateHighlight();
-    });
-  }
-
-  drawLines();
-  updateHighlight();
-}
-
-// ── Draw SVG relation lines ───────────────────────────────────────
-function drawLines() {
-  const schema = SCHEMAS[currentSchema];
-  const pos = positions[currentSchema];
-
-  // Remove old paths
-  svgEl.querySelectorAll('path').forEach(p => p.remove());
-
-  for (const rel of schema.relations) {
-    const fromPos = pos[rel.from];
-    const toPos   = pos[rel.to];
-    if (!fromPos || !toPos) continue;
-
-    const fromEl = document.getElementById('node-' + rel.from);
-    const toEl   = document.getElementById('node-' + rel.to);
-    if (!fromEl || !toEl) continue;
-
-    const fw = fromEl.offsetWidth  || 220;
-    const fh = fromEl.offsetHeight || 100;
-    const tw = toEl.offsetWidth    || 220;
-    const th = toEl.offsetHeight   || 100;
-
-    // Connect right-edge of from to left-edge of to, or auto-side
-    const fx = fromPos.x + fw;
-    const fy = fromPos.y + fh / 2;
-    const tx = toPos.x;
-    const ty = toPos.y + th / 2;
-
-    // Choose sides intelligently
-    let x1, y1, x2, y2;
-    if (fromPos.x + fw < toPos.x + 30) {
-      x1 = fromPos.x + fw; y1 = fromPos.y + fh / 2;
-      x2 = toPos.x;        y2 = toPos.y + th / 2;
-    } else if (toPos.x + tw < fromPos.x + 30) {
-      x1 = fromPos.x;      y1 = fromPos.y + fh / 2;
-      x2 = toPos.x + tw;   y2 = toPos.y + th / 2;
-    } else if (fromPos.y + fh < toPos.y) {
-      x1 = fromPos.x + fw / 2; y1 = fromPos.y + fh;
-      x2 = toPos.x + tw / 2;  y2 = toPos.y;
-    } else {
-      x1 = fromPos.x + fw / 2; y1 = fromPos.y;
-      x2 = toPos.x + tw / 2;  y2 = toPos.y + th;
-    }
-
-    const dx = Math.abs(x2 - x1) * 0.5;
-    const d = `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;
-
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d);
-    path.setAttribute('class', 'relation-line' + (rel.missing ? ' missing' : ''));
-    path.setAttribute('marker-end', rel.missing ? 'url(#arrow-missing)' : 'url(#arrow-default)');
-    path.dataset.from = rel.from;
-    path.dataset.to   = rel.to;
-    svgEl.appendChild(path);
-  }
-}
-
-// ── Highlight active table ────────────────────────────────────────
-function updateHighlight() {
-  const schema = SCHEMAS[currentSchema];
-  document.querySelectorAll('.table-node').forEach(el => {
-    el.classList.remove('active', 'dimmed');
-  });
-  svgEl.querySelectorAll('path').forEach(p => {
-    p.classList.remove('active');
-    p.setAttribute('marker-end', p.classList.contains('missing') ? 'url(#arrow-missing)' : 'url(#arrow-default)');
-  });
-
-  if (!activeTable) return;
-
-  const related = new Set([activeTable]);
-  for (const rel of schema.relations) {
-    if (rel.from === activeTable) related.add(rel.to);
-    if (rel.to   === activeTable) related.add(rel.from);
-  }
-
-  document.querySelectorAll('.table-node').forEach(el => {
-    const id = el.id.replace('node-', '');
-    if (!related.has(id)) el.classList.add('dimmed');
-    else if (id === activeTable) el.classList.add('active');
-  });
-
-  svgEl.querySelectorAll('path').forEach(p => {
-    if (p.dataset.from === activeTable || p.dataset.to === activeTable) {
-      p.classList.add('active');
-      p.setAttribute('marker-end', 'url(#arrow-active)');
-    }
-  });
-}
-
-// ── Drag tables ───────────────────────────────────────────────────
-document.addEventListener('mousemove', e => {
-  if (isDragging && dragNode) {
-    const dx = (e.clientX - dragStartX) / zoom;
-    const dy = (e.clientY - dragStartY) / zoom;
-    positions[currentSchema][dragNode].x = dragOriginX + dx;
-    positions[currentSchema][dragNode].y = dragOriginY + dy;
-    const el = document.getElementById('node-' + dragNode);
-    if (el) {
-      el.style.left = positions[currentSchema][dragNode].x + 'px';
-      el.style.top  = positions[currentSchema][dragNode].y + 'px';
-    }
-    drawLines();
-    return;
-  }
-  if (isPanning) {
-    const dx = e.clientX - panStartX;
-    const dy = e.clientY - panStartY;
-    panX = panOriginX + dx;
-    panY = panOriginY + dy;
-    applyTransform();
-  }
-});
-
-document.addEventListener('mouseup', e => {
-  if (isDragging) {
-    document.getElementById('node-' + dragNode)?.classList.remove('dragging');
-    isDragging = false;
-    dragNode = null;
-  }
-  if (isPanning) {
-    isPanning = false;
-    wrap.classList.remove('panning');
-  }
-});
-
-// ── Pan canvas ────────────────────────────────────────────────────
-wrap.addEventListener('mousedown', e => {
-  if (e.button === 0 && !isDragging) {
-    isPanning = true;
-    panStartX = e.clientX;
-    panStartY = e.clientY;
-    panOriginX = panX;
-    panOriginY = panY;
-    wrap.classList.add('panning');
-    // Click canvas background deselects
-    activeTable = null;
-    updateHighlight();
-  }
-});
-
-// ── Zoom ──────────────────────────────────────────────────────────
-wrap.addEventListener('wheel', e => {
-  e.preventDefault();
-  const delta = e.deltaY > 0 ? 0.9 : 1.1;
-  const rect = wrap.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  // Zoom towards cursor
-  panX = mx - (mx - panX) * delta;
-  panY = my - (my - panY) * delta;
-  zoom = Math.max(0.2, Math.min(2.5, zoom * delta));
-  applyTransform();
-}, { passive: false });
-
-function applyTransform() {
-  canvas.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
-  zoomInfo.textContent = Math.round(zoom * 100) + '%';
-}
-
-// ── Switch schema ─────────────────────────────────────────────────
-function switchSchema(id) {
-  currentSchema = id;
-  activeTable = null;
-  document.querySelectorAll('.schema-btn').forEach((btn, i) => {
-    btn.classList.toggle('active', ['clare','josephine','merged'][i] === id);
-  });
-  render();
-}
-
-// ── Search ────────────────────────────────────────────────────────
-function filterTables(query) {
-  const q = query.toLowerCase();
-  document.querySelectorAll('.table-node').forEach(el => {
-    const id = el.id.replace('node-', '');
-    el.style.display = (!q || id.includes(q)) ? '' : 'none';
-  });
-}
-
-// ── Reset layout ──────────────────────────────────────────────────
-function resetLayout() {
-  delete positions[currentSchema];
-  panX = 0; panY = 0; zoom = 0.7;
-  applyTransform();
-  render();
-}
-
-// ── Boot ──────────────────────────────────────────────────────────
-zoom = 0.55;
-panX = 20;
-panY = 20;
-applyTransform();
-render();
-</script>
 </body>
 </html>
