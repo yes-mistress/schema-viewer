@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Strategy Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --faint: #484f58;
+    --blue: #58a6ff;
+    --green: #3fb950;
+    --orange: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --pink: #f778ba;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 0 0 80px;
+  }
+
+  /* ── Nav ─────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; gap: 8px; height: 52px;
+  }
+
+  nav a {
+    color: var(--muted); text-decoration: none;
+    font-size: 13px; padding: 4px 10px; border-radius: 6px;
+    transition: all 0.15s;
+  }
+  nav a:hover { color: var(--text); background: #ffffff10; }
+  nav a.active { color: var(--blue); }
+  nav .sep { color: var(--faint); font-size: 13px; }
+
+  .lang-toggle {
+    margin-left: auto;
+    display: flex; gap: 4px;
+  }
+  .lang-btn {
+    padding: 4px 12px; border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    font-size: 12px; cursor: pointer; transition: all 0.15s;
+    font-family: inherit;
+  }
+  .lang-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .lang-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+
+  /* ── Layout ──────────────────────────────────── */
+  .wrapper {
+    max-width: 860px; margin: 0 auto; padding: 48px 24px 0;
+  }
+
+  /* ── Header ──────────────────────────────────── */
+  .report-header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .report-label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 12px;
+  }
+
+  .report-title {
+    font-size: 32px; font-weight: 700; line-height: 1.2;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .report-meta {
+    font-size: 13px; color: var(--muted);
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+
+  .report-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ── TOC ─────────────────────────────────────── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 48px;
+  }
+
+  .toc-title {
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+
+  .toc ol {
+    padding-left: 20px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;
+  }
+
+  .toc li { font-size: 13px; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── Sections ────────────────────────────────── */
+  .section {
+    margin-bottom: 48px;
+    scroll-margin-top: 68px;
+  }
+
+  .section-num {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 4px;
+  }
+
+  h2 {
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-size: 16px; font-weight: 600;
+    margin: 24px 0 10px;
+    color: var(--text);
+  }
+
+  p { margin-bottom: 12px; color: #c9d1d9; }
+  p:last-child { margin-bottom: 0; }
+
+  ul, ol { padding-left: 22px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; color: #c9d1d9; }
+
+  /* ── Callout boxes ───────────────────────────── */
+  .callout {
+    border-radius: 8px;
+    border-left: 3px solid;
+    padding: 14px 16px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .callout-recommend {
+    border-color: var(--green);
+    background: #3fb95012;
+  }
+  .callout-recommend .callout-label { color: var(--green); }
+
+  .callout-pushback {
+    border-color: var(--orange);
+    background: #d2992212;
+  }
+  .callout-pushback .callout-label { color: var(--orange); }
+
+  .callout-decision {
+    border-color: var(--blue);
+    background: #58a6ff12;
+  }
+  .callout-decision .callout-label { color: var(--blue); }
+
+  .callout-risk {
+    border-color: var(--red);
+    background: #f8514912;
+  }
+  .callout-risk .callout-label { color: var(--red); }
+
+  .callout-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* ── Comparison table ────────────────────────── */
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px; margin: 16px 0;
+  }
+  th {
+    text-align: left; padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    color: #c9d1d9;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #ffffff04; }
+
+  .tick   { color: var(--green); }
+  .cross  { color: var(--red); }
+  .warn   { color: var(--orange); }
+
+  /* ── Sprint table ────────────────────────────── */
+  .sprint {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .sprint-header {
+    padding: 10px 16px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .sprint-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 40px;
+    padding: 9px 16px;
+    border-bottom: 1px solid #21262d;
+    font-size: 13px; gap: 12px;
+    align-items: center;
+  }
+  .sprint-row:last-child { border-bottom: none; }
+  .sprint-row .why { color: var(--muted); font-size: 12px; }
+  .effort { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-align: center; }
+  .effort-s { background: #3fb95022; color: var(--green); }
+  .effort-m { background: #d2992222; color: var(--orange); }
+  .effort-l { background: #f8514922; color: var(--red); }
+
+  /* ── Lang toggle ─────────────────────────────── */
+  [lang="fr"] { display: none; }
+
+  @media (max-width: 600px) {
+    .toc ol { grid-template-columns: 1fr; }
+    .sprint-row { grid-template-columns: 1fr 40px; }
+    .sprint-row .why { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">⬡ Schema Viewer</a>
+  <span class="sep">›</span>
+  <a href="report.html" class="active" data-en="Strategy Report" data-fr="Rapport Stratégique">Strategy Report</a>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('fr')">FR</button>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── HEADER ───────────────────────────────────────────── -->
+  <header class="report-header">
+    <div class="report-label" data-en="Strategic Advisory" data-fr="Conseil Stratégique">Strategic Advisory</div>
+    <h1 class="report-title" data-en="CRM Platform Strategy Report" data-fr="Rapport de Stratégie Plateforme CRM">CRM Platform Strategy Report</h1>
+    <div class="report-meta">
+      <span>📅 <span data-en="June 2026" data-fr="Juin 2026">June 2026</span></span>
+      <span>👤 <span data-en="Clare Carmody & Josephine Devaud" data-fr="Clare Carmody & Josephine Devaud">Clare Carmody & Josephine Devaud</span></span>
+      <span>🛠 <span data-en="Built with Claude (Anthropic)" data-fr="Construit avec Claude (Anthropic)">Built with Claude (Anthropic)</span></span>
+    </div>
+  </header>
+
+  <!-- ── TOC ──────────────────────────────────────────────── -->
+  <div class="toc">
+    <div class="toc-title" data-en="Contents" data-fr="Sommaire">Contents</div>
+    <ol>
+      <li><a href="#s1" data-en="Platform & Stack" data-fr="Plateforme & Stack">Platform & Stack</a></li>
+      <li><a href="#s2" data-en="WhatsApp Integration" data-fr="Intégration WhatsApp">WhatsApp Integration</a></li>
+      <li><a href="#s3" data-en="Payment Processing" data-fr="Traitement des Paiements">Payment Processing</a></li>
+      <li><a href="#s4" data-en="Schema & Data Architecture" data-fr="Architecture des Données">Schema & Data Architecture</a></li>
+      <li><a href="#s5" data-en="Feature Priorities" data-fr="Priorités Fonctionnelles">Feature Priorities</a></li>
+      <li><a href="#s6" data-en="Security & Privacy" data-fr="Sécurité & Confidentialité">Security & Privacy</a></li>
+      <li><a href="#s7" data-en="Business Model & Scaling" data-fr="Modèle Économique & Croissance">Business Model & Scaling</a></li>
+      <li><a href="#s8" data-en="Outstanding Decisions" data-fr="Décisions en Suspens">Outstanding Decisions</a></li>
+    </ol>
+  </div>
+
+  <!-- ── S1: PLATFORM ─────────────────────────────────────── -->
+  <section class="section" id="s1">
+    <div class="section-num" data-en="Section 01" data-fr="Section 01">Section 01</div>
+    <h2 data-en="Platform & Stack" data-fr="Plateforme & Stack">Platform & Stack</h2>
+
+    <h3 data-en="What was considered" data-fr="Ce qui a été examiné">What was considered</h3>
+    <p data-en="Two parallel builds were underway: Clare built a custom CRM from scratch using Claude Code (approximately 40 hours of development), hosted on Vercel with Supabase as the database. Josephine independently built a separate CRM on Lovable, also backed by Supabase. Both were reviewed in a joint session." data-fr="Deux développements parallèles étaient en cours : Clare a construit un CRM personnalisé à partir de zéro en utilisant Claude Code (environ 40 heures de développement), hébergé sur Vercel avec Supabase comme base de données. Josephine a indépendamment construit un CRM séparé sur Lovable, également sur Supabase. Les deux ont été examinés lors d'une session commune.">Two parallel builds were underway: Clare built a custom CRM from scratch using Claude Code (approximately 40 hours of development), hosted on Vercel with Supabase as the database. Josephine independently built a separate CRM on Lovable, also backed by Supabase. Both were reviewed in a joint session.</p>
+
+    <p data-en="ChatGPT was also consulted and recommended Lovable + Supabase as the primary path, characterising Claude Code as slower and better suited to technical founders. It suggested this was a fresh-start decision." data-fr="ChatGPT a également été consulté et a recommandé Lovable + Supabase comme voie principale, qualifiant Claude Code de plus lent et mieux adapté aux fondateurs techniques. Il suggérait qu'il s'agissait d'une décision de départ.">ChatGPT was also consulted and recommended Lovable + Supabase as the primary path, characterising Claude Code as slower and better suited to technical founders. It suggested this was a fresh-start decision.</p>
+
+    <div class="callout callout-decision">
+      <div class="callout-label" data-en="Agreed" data-fr="Accord">Agreed</div>
+      <span data-en="Josephine's Lovable build has a superior UI: better dashboard, pipeline intelligence, safety check-in workflow, probability-weighted forecasting, and richer contact fields. Clare's build has superior infrastructure: WhatsApp integration, multi-tenant architecture, automations, flows, practices system, and lead forms." data-fr="Le build Lovable de Josephine a une interface supérieure : meilleur tableau de bord, intelligence du pipeline, workflow de check-in sécurité, prévisions pondérées par probabilité, et des champs de contact plus riches. Le build de Clare a une infrastructure supérieure : intégration WhatsApp, architecture multi-tenant, automatisations, flux, système de pratiques et formulaires de leads.">Josephine's Lovable build has a superior UI: better dashboard, pipeline intelligence, safety check-in workflow, probability-weighted forecasting, and richer contact fields. Clare's build has superior infrastructure: WhatsApp integration, multi-tenant architecture, automations, flows, practices system, and lead forms.</span>
+    </div>
+
+    <div class="callout callout-recommend">
+      <div class="callout-label" data-en="Recommendation" data-fr="Recommandation">Recommendation</div>
+      <span data-en="Export Josephine's Lovable codebase to a private GitHub repository. Host it on the same Vercel + Supabase stack Clare already uses. Migrate Clare's backend features (WhatsApp bridge, practices system, lead forms, automations) into the Lovable UI. This is not a fresh-start decision — it is a merger of two existing builds." data-fr="Exporter le code Lovable de Josephine vers un dépôt GitHub privé. L'héberger sur la même stack Vercel + Supabase que Clare utilise déjà. Migrer les fonctionnalités backend de Clare (pont WhatsApp, système de pratiques, formulaires de leads, automatisations) dans l'interface Lovable. Ce n'est pas une décision de départ — c'est une fusion de deux builds existants.">Export Josephine's Lovable codebase to a private GitHub repository. Host it on the same Vercel + Supabase stack Clare already uses. Migrate Clare's backend features (WhatsApp bridge, practices system, lead forms, automations) into the Lovable UI. This is not a fresh-start decision — it is a merger of two existing builds.</span>
+    </div>
+
+    <div class="callout callout-pushback">
+      <div class="callout-label" data-en="Clare's pushback on ChatGPT" data-fr="Objection de Clare à ChatGPT">Clare's pushback on ChatGPT</div>
+      <span data-en="ChatGPT's framing of 'Lovable vs Claude Code' misses the key context: 40 hours of working infrastructure already exist. The question is not which platform to start on — it is how to merge what has been built." data-fr="Le cadrage de ChatGPT 'Lovable vs Claude Code' manque le contexte clé : 40 heures d'infrastructure fonctionnelle existent déjà. La question n'est pas quelle plateforme choisir pour démarrer — c'est comment fusionner ce qui a été construit.">ChatGPT's framing of 'Lovable vs Claude Code' misses the key context: 40 hours of working infrastructure already exist. The question is not which platform to start on — it is how to merge what has been built.</span>
+    </div>
+
+    <div class="callout callout-risk">
+      <div class="callout-label" data-en="Risk to manage" data-fr="Risque à gérer">Risk to manage</div>
+      <span data-en="Lovable is a managed platform. Complex integrations (WhatsApp webhooks, API keys, automations) should be built on infrastructure you control, not inside Lovable's managed layer. Export the code before adding integrations." data-fr="Lovable est une plateforme gérée. Les intégrations complexes (webhooks WhatsApp, clés API, automatisations) doivent être construites sur une infrastructure que vous contrôlez, pas dans la couche gérée de Lovable. Exportez le code avant d'ajouter des intégrations.">Lovable is a managed platform. Complex integrations (WhatsApp webhooks, API keys, automations) should be built on infrastructure you control, not inside Lovable's managed layer. Export the code before adding integrations.</span>
+    </div>
+  </section>
+
+  <!-- ── S2: WHATSAPP ──────────────────────────────────────── -->
+  <section class="section" id="s2">
+    <div class="section-num" data-en="Section 02" data-fr="Section 02">Section 02</div>
+    <h2 data-en="WhatsApp Integration" data-fr="Intégration WhatsApp">WhatsApp Integration</h2>
+
+    <h3 data-en="What was attempted" data-fr="Ce qui a été tenté">What was attempted</h3>
+    <p data-en="Meta Cloud API was set up directly. Issues encountered: 24-hour token expiry on test credentials, phone number already registered to personal WhatsApp (requiring migration), webhook verification failures, and high complexity for non-technical users." data-fr="L'API Cloud Meta a été configurée directement. Problèmes rencontrés : expiration du token de test en 24 heures, numéro de téléphone déjà enregistré sur WhatsApp personnel (nécessitant une migration), échecs de vérification du webhook, et complexité élevée pour les utilisateurs non techniques.">Meta Cloud API was set up directly. Issues encountered: 24-hour token expiry on test credentials, phone number already registered to personal WhatsApp (requiring migration), webhook verification failures, and high complexity for non-technical users.</p>
+
+    <p data-en="A QR code bridge using Baileys (open source WhatsApp Web library) was then built and deployed locally. Messages sync both to the phone app and the CRM simultaneously. The bridge imports historical messages and handles real-time bidirectional sync." data-fr="Un pont QR code utilisant Baileys (bibliothèque WhatsApp Web open source) a ensuite été construit et déployé localement. Les messages se synchronisent simultanément dans l'application téléphone et dans le CRM. Le pont importe les messages historiques et gère la synchronisation bidirectionnelle en temps réel.">A QR code bridge using Baileys (open source WhatsApp Web library) was then built and deployed locally. Messages sync both to the phone app and the CRM simultaneously. The bridge imports historical messages and handles real-time bidirectional sync.</p>
+
+    <div class="callout callout-pushback">
+      <div class="callout-label" data-en="Clare's non-negotiable" data-fr="Non-négociable de Clare">Clare's non-negotiable</div>
+      <span data-en="'WhatsApp data MUST come into the app seamlessly from day one for all users.' This overrode the standard lean startup advice to validate before building the integration. WhatsApp is itself what needs to be validated — building without it validates a different product." data-fr="« Les données WhatsApp DOIVENT arriver dans l'application de manière fluide dès le premier jour pour tous les utilisateurs. » Cela a supplanté le conseil lean startup standard de valider avant de construire l'intégration. WhatsApp est lui-même ce qui doit être validé — construire sans lui revient à valider un produit différent.">
+        "WhatsApp data MUST come into the app seamlessly from day one for all users." This overrode the standard lean startup advice to validate before building the integration. WhatsApp is itself what needs to be validated — building without it validates a different product.
+      </span>
+    </div>
+
+    <h3 data-en="Options evaluated" data-fr="Options évaluées">Options evaluated</h3>
+    <table>
+      <tr>
+        <th data-en="Option" data-fr="Option">Option</th>
+        <th data-en="User friction" data-fr="Friction utilisateur">User friction</th>
+        <th data-en="Meta visibility" data-fr="Visibilité Meta">Meta visibility</th>
+        <th data-en="Cost" data-fr="Coût">Cost</th>
+        <th data-en="Verdict" data-fr="Verdict">Verdict</th>
+      </tr>
+      <tr>
+        <td data-en="Meta Cloud API (direct)" data-fr="API Cloud Meta (directe)">Meta Cloud API (direct)</td>
+        <td><span class="cross">✗</span> <span data-en="Very high" data-fr="Très élevée">Very high</span></td>
+        <td><span class="cross">✗</span> <span data-en="Maximum" data-fr="Maximum">Maximum</span></td>
+        <td data-en="Free" data-fr="Gratuit">Free</td>
+        <td><span class="cross" data-en="Rejected" data-fr="Rejeté">✗ Rejected</span></td>
+      </tr>
+      <tr>
+        <td>360dialog</td>
+        <td><span class="warn">~</span> <span data-en="Low (embedded flow)" data-fr="Faible (flux intégré)">Low (embedded flow)</span></td>
+        <td><span class="warn">~</span> <span data-en="High (BSP)" data-fr="Élevée (BSP)">High (BSP)</span></td>
+        <td>€50/mo <span class="muted">(→€10 as partner)</span></td>
+        <td><span class="warn" data-en="Phase 2 (50+ users)" data-fr="Phase 2 (50+ utilisateurs)">~ Phase 2</span></td>
+      </tr>
+      <tr>
+        <td>Twilio</td>
+        <td><span class="cross">✗</span> <span data-en="High (migration required)" data-fr="Élevée (migration requise)">High (migration required)</span></td>
+        <td><span class="warn">~</span> <span data-en="High" data-fr="Élevée">High</span></td>
+        <td data-en="Pay per message" data-fr="Paiement par message">Pay per message</td>
+        <td><span class="cross" data-en="Rejected for now" data-fr="Rejeté pour l'instant">✗ Rejected for now</span></td>
+      </tr>
+      <tr>
+        <td data-en="QR Bridge (Baileys)" data-fr="Pont QR (Baileys)">QR Bridge (Baileys)</td>
+        <td><span class="tick">✓</span> <span data-en="Very low (scan once)" data-fr="Très faible (scanner une fois)">Very low (scan once)</span></td>
+        <td><span class="tick">✓</span> <span data-en="None" data-fr="Aucune">None</span></td>
+        <td data-en="~€20/mo server" data-fr="~€20/mois serveur">~€20/mo server</td>
+        <td><span class="tick" data-en="Selected (Phase 1)" data-fr="Sélectionné (Phase 1)">✓ Selected (Phase 1)</span></td>
+      </tr>
+      <tr>
+        <td>Telegram Bot</td>
+        <td><span class="tick">✓</span> <span data-en="Very low" data-fr="Très faible">Very low</span></td>
+        <td><span class="tick">✓</span> <span data-en="None" data-fr="Aucune">None</span></td>
+        <td data-en="Free" data-fr="Gratuit">Free</td>
+        <td><span class="tick" data-en="Build in parallel" data-fr="Construire en parallèle">✓ Build in parallel</span></td>
+      </tr>
+    </table>
+
+    <div class="callout callout-recommend">
+      <div class="callout-label" data-en="Recommendation" data-fr="Recommandation">Recommendation</div>
+      <span data-en="Deploy the QR bridge as a hosted persistent service (Railway or Fly.io). Each user scans once from their CRM settings — no migration, no Meta account, no monthly fee per number. Meta cannot see the platform. When individual number bans become a meaningful operational problem (estimated 200+ active users), migrate to 360dialog partner programme. Build Telegram bot integration in parallel — free, official, zero risk." data-fr="Déployer le pont QR comme service persistant hébergé (Railway ou Fly.io). Chaque utilisateur scanne une fois depuis les paramètres de son CRM — aucune migration, aucun compte Meta, aucun frais mensuel par numéro. Meta ne peut pas voir la plateforme. Lorsque les bannissements de numéros individuels deviennent un problème opérationnel significatif (estimé à 200+ utilisateurs actifs), migrer vers le programme partenaire 360dialog. Construire l'intégration du bot Telegram en parallèle — gratuit, officiel, risque zéro.">
+        Deploy the QR bridge as a hosted persistent service (Railway or Fly.io). Each user scans once from their CRM settings — no migration, no Meta account, no monthly fee per number. Meta cannot see the platform. When individual number bans become a meaningful operational problem (estimated 200+ active users), migrate to 360dialog partner programme. Build Telegram bot integration in parallel — free, official, zero risk.
+      </span>
+    </div>
+
+    <div class="callout callout-risk">
+      <div class="callout-label" data-en="Meta risk for sextech" data-fr="Risque Meta pour le sextech">Meta risk for sextech</div>
+      <span data-en="Any official Meta API path creates direct visibility with Meta, which has a documented history of deplatforming sextech businesses. The QR bridge approach inverts this risk: Meta cannot see the platform at all. If they detect and ban a number, it is one user affected, not the entire platform." data-fr="Tout chemin officiel vers l'API Meta crée une visibilité directe avec Meta, qui a un historique documenté de déplateforme des entreprises sextech. L'approche pont QR inverse ce risque : Meta ne peut pas voir la plateforme du tout. S'ils détectent et bannissent un numéro, c'est un utilisateur affecté, pas toute la plateforme.">
+        Any official Meta API path creates direct visibility with Meta, which has a documented history of deplatforming sextech businesses. The QR bridge approach inverts this risk: Meta cannot see the platform at all. If they detect and ban a number, it is one user affected, not the entire platform.
+      </span>
+    </div>
+  </section>
+
+  <!-- ── S3: PAYMENTS ──────────────────────────────────────── -->
+  <section class="section" id="s3">
+    <div class="section-num" data-en="Section 03" data-fr="Section 03">Section 03</div>
+    <h2 data-en="Payment Processing" data-fr="Traitement des Paiements">Payment Processing</h2>
+
+    <p data-en="ChatGPT recommended Stripe as the default payment processor. This was immediately challenged." data-fr="ChatGPT a recommandé Stripe comme processeur de paiement par défaut. Cela a été immédiatement contesté.">ChatGPT recommended Stripe as the default payment processor. This was immediately challenged.</p>
+
+    <div class="callout callout-pushback">
+      <div class="callout-label" data-en="Clare's pushback" data-fr="Objection de Clare">Clare's pushback</div>
+      <span data-en="'Stripe is often not possible in sextech.' Stripe, PayPal, and Square have all deplatformed sex work adjacent businesses, often without warning and with funds held in transit. FOSTA-SESTA made US card networks broadly restrictive toward the industry." data-fr="« Stripe n'est souvent pas possible dans le sextech. » Stripe, PayPal et Square ont tous déplatformé des entreprises adjacentes au travail du sexe, souvent sans avertissement et avec des fonds retenus en transit. FOSTA-SESTA a rendu les réseaux de cartes américains largement restrictifs envers l'industrie.">
+        "Stripe is often not possible in sextech." Stripe, PayPal, and Square have all deplatformed sex work adjacent businesses, often without warning and with funds held in transit. FOSTA-SESTA made US card networks broadly restrictive toward the industry.
+      </span>
+    </div>
+
+    <div class="callout callout-recommend">
+      <div class="callout-label" data-en="Recommendation" data-fr="Recommandation">Recommendation</div>
+      <span data-en="Design the billing layer to be processor-agnostic from day one. Recommended stack: (1) SEPA direct debit for European users — bypasses card networks entirely, low cost, reliable for subscriptions. (2) CCBill or Segpay as the card processor — expensive (10–15% fees) but will not deplatform. (3) Crypto (USDC/Monero) as an option — signals platform literacy to the community. The worst outcome is building around Stripe, reaching 50 paying users, and having the account terminated with funds held." data-fr="Concevoir la couche de facturation pour être agnostique au processeur dès le premier jour. Stack recommandé : (1) Prélèvement SEPA pour les utilisateurs européens — contourne complètement les réseaux de cartes, faible coût, fiable pour les abonnements. (2) CCBill ou Segpay comme processeur de cartes — coûteux (frais 10–15%) mais ne déplateforme pas. (3) Crypto (USDC/Monero) comme option — signale la maîtrise de la plateforme à la communauté.">
+        Design the billing layer to be processor-agnostic from day one. Recommended stack: (1) SEPA direct debit for European users — bypasses card networks entirely, low cost, reliable for subscriptions. (2) CCBill or Segpay as the card processor — expensive (10–15% fees) but will not deplatform. (3) Crypto (USDC/Monero) as an option — signals platform literacy to the community.
+      </span>
+    </div>
+  </section>
+
+  <!-- ── S4: SCHEMA ────────────────────────────────────────── -->
+  <section class="section" id="s4">
+    <div class="section-num" data-en="Section 04" data-fr="Section 04">Section 04</div>
+    <h2 data-en="Schema & Data Architecture" data-fr="Architecture des Données">Schema & Data Architecture</h2>
+
+    <p data-en="Josephine's CRM backup was analysed. Key structural differences were identified between the two builds." data-fr="La sauvegarde du CRM de Josephine a été analysée. Des différences structurelles clés ont été identifiées entre les deux builds.">Josephine's CRM backup was analysed. Key structural differences were identified between the two builds.</p>
+
+    <h3 data-en="Fields Josephine has that Clare's lacks" data-fr="Champs que Josephine a et que Clare n'a pas">Fields Josephine has that Clare's lacks</h3>
+    <table>
+      <tr>
+        <th data-en="Field" data-fr="Champ">Field</th>
+        <th data-en="Purpose" data-fr="Utilité">Purpose</th>
+        <th data-en="Table" data-fr="Table">Table</th>
+      </tr>
+      <tr><td>nickname / fake_name / real_name</td><td data-en="Three-level identity — what you call them, what they told you, verified name" data-fr="Identité à trois niveaux — comment vous les appelez, ce qu'ils vous ont dit, nom vérifié">Three-level identity</td><td>contacts</td></tr>
+      <tr><td>seriousness (1–5) / quality (1–5)</td><td data-en="Separate numeric scores for prospect quality vs session quality" data-fr="Scores numériques séparés pour la qualité du prospect vs la qualité de la session">Separate numeric scores</td><td>contacts</td></tr>
+      <tr><td>probability (0–100%)</td><td data-en="Essential for weighted pipeline forecast view" data-fr="Essentiel pour la vue de prévision du pipeline pondérée">Pipeline forecasting</td><td>opportunities</td></tr>
+      <tr><td>service_name_snapshot</td><td data-en="Preserves service name at booking time even if service later changes" data-fr="Préserve le nom du service au moment de la réservation même si le service change par la suite">Data integrity</td><td>opportunities</td></tr>
+      <tr><td>is_duo / duo_with</td><td data-en="Duo booking support" data-fr="Support de réservation en duo">Duo bookings</td><td>opportunities</td></tr>
+      <tr><td>language / payment_method / preferred_slot</td><td data-en="Client preferences — important for multi-country platform" data-fr="Préférences client — important pour la plateforme multi-pays">Client preferences</td><td>contacts</td></tr>
+      <tr><td>safety_contacts</td><td data-en="Multiple people to ping on check-in" data-fr="Plusieurs personnes à alerter lors du check-in">Safety</td><td>safety_contacts</td></tr>
+      <tr><td>check_ins</td><td data-en="Prepare → start → grace delay → ping contacts workflow" data-fr="Workflow préparer → démarrer → délai de grâce → alerter les contacts">Safety workflow</td><td>check_ins</td></tr>
+    </table>
+
+    <h3 data-en="Fields Clare has that Josephine's lacks" data-fr="Champs que Clare a et que Josephine n'a pas">Fields Clare has that Josephine's lacks</h3>
+    <table>
+      <tr>
+        <th data-en="Feature" data-fr="Fonctionnalité">Feature</th>
+        <th data-en="Note" data-fr="Note">Note</th>
+      </tr>
+      <tr><td data-en="Practices system (yes/maybe/no per tag per contact)" data-fr="Système de pratiques (oui/peut-être/non par tag par contact)">Practices system</td><td data-en="Rich three-way preference tracking — not in Josephine's build at all" data-fr="Suivi riche des préférences à trois niveaux — absent du build de Josephine">Rich preference tracking</td></tr>
+      <tr><td data-en="Conversations + inbox" data-fr="Conversations + boîte de réception">Conversations + inbox</td><td data-en="Native messaging thread — Josephine links to conversations but has no inbox" data-fr="Fil de messagerie natif — Josephine renvoie aux conversations mais n'a pas de boîte de réception">Native messaging</td></tr>
+      <tr><td data-en="Automations + flows + broadcasts" data-fr="Automatisations + flux + diffusions">Automations + flows</td><td data-en="Rule-based messaging — entirely absent from Josephine's" data-fr="Messagerie basée sur des règles — totalement absente de Josephine">Rule-based messaging</td></tr>
+      <tr><td data-en="Multi-tenant architecture" data-fr="Architecture multi-tenant">Multi-tenant</td><td data-en="Each provider's data is isolated — Josephine's is single-user only" data-fr="Les données de chaque prestataire sont isolées — Josephine est uniquement mono-utilisateur">Data isolation</td></tr>
+      <tr><td data-en="Screening fields (deposit, ID, references)" data-fr="Champs de sélection (acompte, pièce d'identité, références)">Screening fields</td><td data-en="Deposit paid, ID verified, references provided, screening notes" data-fr="Acompte payé, identité vérifiée, références fournies, notes de sélection">Client verification</td></tr>
+      <tr><td data-en="Lead form API" data-fr="API de formulaire de leads">Lead form API</td><td data-en="Form submissions auto-create contacts in CRM" data-fr="Les soumissions de formulaires créent automatiquement des contacts dans le CRM">Lead capture</td></tr>
+    </table>
+
+    <div class="callout callout-recommend">
+      <div class="callout-label" data-en="Recommendation" data-fr="Recommandation">Recommendation</div>
+      <span data-en="Align schemas before merging codebases. Add probability, nickname/fake_name/real_name, seriousness/quality, language, payment_method, service_name_snapshot, is_duo to Clare's schema. Add safety_contacts and check_ins tables (new to Clare). These are additive changes — no existing data is affected." data-fr="Aligner les schémas avant de fusionner les bases de code. Ajouter probability, nickname/fake_name/real_name, seriousness/quality, language, payment_method, service_name_snapshot, is_duo au schéma de Clare. Ajouter les tables safety_contacts et check_ins (nouvelles pour Clare). Ce sont des changements additifs — aucune donnée existante n'est affectée.">
+        Align schemas before merging codebases. Add probability, nickname/fake_name/real_name, seriousness/quality, language, payment_method, service_name_snapshot, is_duo to Clare's schema. Add safety_contacts and check_ins tables (new to Clare). These are additive changes — no existing data is affected.
+      </span>
+    </div>
+  </section>
+
+  <!-- ── S5: FEATURES ──────────────────────────────────────── -->
+  <section class="section" id="s5">
+    <div class="section-num" data-en="Section 05" data-fr="Section 05">Section 05</div>
+    <h2 data-en="Feature Priorities" data-fr="Priorités Fonctionnelles">Feature Priorities</h2>
+
+    <p data-en="Based on analysis of both CRMs, the joint meeting transcript, and Josephine's data backup, the following sprint plan was produced." data-fr="Sur la base de l'analyse des deux CRM, de la transcription de la réunion commune et de la sauvegarde des données de Josephine, le plan de sprint suivant a été produit.">Based on analysis of both CRMs, the joint meeting transcript, and Josephine's data backup, the following sprint plan was produced.</p>
+
+    <h3 data-en="Sprint 1 — This week (blocking daily use)" data-fr="Sprint 1 — Cette semaine (bloque l'utilisation quotidienne)">Sprint 1 — This week</h3>
+    <div class="sprint">
+      <div class="sprint-header" style="background:#3fb95015; color:var(--green)" data-en="Critical — do now" data-fr="Critique — faire maintenant">Critical — do now</div>
+      <div class="sprint-row"><div><strong data-en="Fix two-sided conversations" data-fr="Corriger les conversations bidirectionnelles">Fix two-sided conversations</strong><div class="why" data-en="Client messages not appearing — core loop broken" data-fr="Messages clients non visibles — boucle principale cassée">Client messages not appearing — core loop broken</div></div><div data-en="Core" data-fr="Core">Core</div><div><span class="effort effort-m">M</span></div></div>
+      <div class="sprint-row"><div><strong data-en="Add pipeline stages: Scoping, Proposal Sent, Cancelled + reason" data-fr="Ajouter des étapes : Scoping, Proposition envoyée, Annulé + raison">Pipeline stages</strong><div class="why" data-en="Can't track where leads actually are" data-fr="Impossible de suivre où en sont les leads">Can't track where leads actually are</div></div><div data-en="Core" data-fr="Core">Core</div><div><span class="effort effort-m">M</span></div></div>
+      <div class="sprint-row"><div><strong data-en="Dashboard: remove clutter, add upcoming appointments" data-fr="Tableau de bord : supprimer le superflu, ajouter les RDV à venir">Dashboard cleanup</strong><div class="why" data-en="Opens every day — should show what matters" data-fr="Ouvert chaque jour — doit montrer ce qui compte">Opens every day</div></div><div data-en="UX" data-fr="UX">UX</div><div><span class="effort effort-s">S</span></div></div>
+      <div class="sprint-row"><div><strong data-en="Pricing: base price auto-fill → discount → calculated final" data-fr="Tarification : prix de base auto-rempli → remise → final calculé">Pricing flow fix</strong><div class="why" data-en="Mental arithmetic on every booking" data-fr="Calcul mental à chaque réservation">Mental arithmetic on every booking</div></div><div data-en="Finance" data-fr="Finance">Finance</div><div><span class="effort effort-s">S</span></div></div>
+      <div class="sprint-row"><div><strong data-en="Address/session link field on bookings" data-fr="Champ adresse/lien de session sur les réservations">Booking address field</strong><div class="why" data-en="Missing for every outcall and virtual session" data-fr="Manquant pour chaque déplacement et session virtuelle">Missing for outcall/virtual</div></div><div data-en="Data" data-fr="Données">Data</div><div><span class="effort effort-s">S</span></div></div>
+    </div>
+
+    <h3 data-en="Sprint 2 — Next week" data-fr="Sprint 2 — Semaine prochaine">Sprint 2 — Next week</h3>
+    <div class="sprint">
+      <div class="sprint-header" style="background:#d2992215; color:var(--orange)" data-en="Important" data-fr="Important">Important</div>
+      <div class="sprint-row"><div><strong data-en="WhatsApp contact name sync" data-fr="Synchronisation des noms de contacts WhatsApp">WA contact name sync</strong><div class="why" data-en="Numbers arriving without names" data-fr="Numéros arrivant sans noms">Numbers arriving without names</div></div><div data-en="Messaging" data-fr="Messagerie">Messaging</div><div><span class="effort effort-l">L</span></div></div>
+      <div class="sprint-row"><div><strong data-en="Practices on booking record (in addition to contact)" data-fr="Pratiques sur la réservation (en plus du contact)">Practices on booking</strong><div class="why" data-en="Full menu vs agreed selection for this session" data-fr="Menu complet vs sélection convenue pour cette session">Menu vs selection</div></div><div data-en="Data" data-fr="Données">Data</div><div><span class="effort effort-m">M</span></div></div>
+      <div class="sprint-row"><div><strong data-en="Probability field on bookings" data-fr="Champ probabilité sur les réservations">Probability on bookings</strong><div class="why" data-en="Required for weighted pipeline forecast" data-fr="Nécessaire pour la prévision pondérée du pipeline">Pipeline forecast</div></div><div data-en="Finance" data-fr="Finance">Finance</div><div><span class="effort effort-s">S</span></div></div>
+      <div class="sprint-row"><div><strong data-en="Deploy hosted QR bridge (not laptop-dependent)" data-fr="Déployer le pont QR hébergé (indépendant du laptop)">Host QR bridge</strong><div class="why" data-en="Currently requires Terminal open on Clare's Mac" data-fr="Nécessite actuellement Terminal ouvert sur le Mac de Clare">Production-ready WhatsApp</div></div><div data-en="Infra" data-fr="Infra">Infra</div><div><span class="effort effort-m">M</span></div></div>
+    </div>
+
+    <h3 data-en="Backlog" data-fr="Backlog">Backlog</h3>
+    <ul>
+      <li data-en="Safety check-in workflow (from Josephine's build)" data-fr="Workflow de check-in sécurité (du build de Josephine)">Safety check-in workflow (from Josephine's build)</li>
+      <li data-en="Telegram bot integration (free, official, parallel to WhatsApp)" data-fr="Intégration du bot Telegram (gratuit, officiel, parallèle à WhatsApp)">Telegram bot integration</li>
+      <li data-en="Calendar sync with Google / Apple / Proton" data-fr="Synchronisation calendrier avec Google / Apple / Proton">Calendar sync</li>
+      <li data-en="Discount frequency analytics (correlate with client quality)" data-fr="Analytique de fréquence de remise (corrélation avec la qualité client)">Discount frequency analytics</li>
+      <li data-en="Shared blacklist API (count-only, no visible list)" data-fr="API liste noire partagée (comptage uniquement, liste non visible)">Shared blacklist API</li>
+      <li data-en="nickname / fake_name / real_name on contacts" data-fr="nickname / fake_name / real_name sur les contacts">Three-part contact name</li>
+      <li data-en="Pronoun field on contacts" data-fr="Champ pronom sur les contacts">Pronoun field</li>
+      <li data-en="Revenue forecasting dashboard (30-day projection)" data-fr="Tableau de bord de prévision des revenus (projection sur 30 jours)">Revenue forecasting</li>
+    </ul>
+  </section>
+
+  <!-- ── S6: SECURITY ──────────────────────────────────────── -->
+  <section class="section" id="s6">
+    <div class="section-num" data-en="Section 06" data-fr="Section 06">Section 06</div>
+    <h2 data-en="Security & Privacy" data-fr="Sécurité & Confidentialité">Security & Privacy</h2>
+
+    <p data-en="This platform handles names, phone numbers, booking history, messages, location data, sexual preferences, and safety information for a population that faces specific risks from data exposure. Security is not a feature — it is a foundation." data-fr="Cette plateforme gère des noms, numéros de téléphone, historiques de réservations, messages, données de localisation, préférences sexuelles et informations de sécurité pour une population qui fait face à des risques spécifiques liés à l'exposition des données. La sécurité n'est pas une fonctionnalité — c'est une fondation.">This platform handles names, phone numbers, booking history, messages, location data, sexual preferences, and safety information for a population that faces specific risks from data exposure. Security is not a feature — it is a foundation.</p>
+
+    <h3 data-en="Already in place" data-fr="Déjà en place">Already in place</h3>
+    <ul>
+      <li data-en="Supabase Row Level Security — each provider's data is isolated at database level" data-fr="Row Level Security Supabase — les données de chaque prestataire sont isolées au niveau base de données">Supabase Row Level Security — each provider's data isolated at database level</li>
+      <li data-en="WhatsApp access tokens encrypted at rest (AES-256-GCM)" data-fr="Tokens d'accès WhatsApp chiffrés au repos (AES-256-GCM)">WhatsApp access tokens encrypted at rest (AES-256-GCM)</li>
+      <li data-en="noindex/nofollow on all public-facing pages" data-fr="noindex/nofollow sur toutes les pages publiques">noindex/nofollow on all public-facing pages</li>
+      <li data-en="Lead form data deletion on rejection (stated in form copy)" data-fr="Suppression des données du formulaire de leads en cas de rejet (mentionné dans le texte du formulaire)">Lead form data deletion on rejection (stated in form copy)</li>
+      <li data-en="EU hosting (Supabase Frankfurt, Vercel with EU routing)" data-fr="Hébergement UE (Supabase Francfort, Vercel avec routage UE)">EU hosting (Supabase Frankfurt)</li>
+    </ul>
+
+    <h3 data-en="Recommended additions" data-fr="Ajouts recommandés">Recommended additions</h3>
+    <ul>
+      <li data-en="MFA for provider accounts" data-fr="MFA pour les comptes prestataires">MFA for provider accounts</li>
+      <li data-en="Data retention policy — define what is kept and for how long" data-fr="Politique de conservation des données — définir ce qui est conservé et pour combien de temps">Data retention policy</li>
+      <li data-en="Delete-on-request workflow (GDPR Article 17)" data-fr="Workflow de suppression sur demande (RGPD Article 17)">Delete-on-request workflow (GDPR Article 17)</li>
+      <li data-en="Encrypted backups with separate key management" data-fr="Sauvegardes chiffrées avec gestion de clés séparée">Encrypted backups</li>
+      <li data-en="Security consultant engaged before public launch (not a full CTO at this stage)" data-fr="Consultant en sécurité engagé avant le lancement public (pas un CTO complet à ce stade)">Security consultant before public launch</li>
+    </ul>
+
+    <div class="callout callout-risk">
+      <div class="callout-label" data-en="Live location: excluded" data-fr="Localisation en direct : exclue">Live location: excluded</div>
+      <span data-en="Live GPS location sharing was considered for the safety check-in feature and excluded on privacy grounds. The platform stores location as a city name or address string only. Real-time location should use a provider's existing trusted tools (iOS Find My, Signal) rather than being stored in the CRM." data-fr="Le partage de localisation GPS en direct a été envisagé pour la fonctionnalité de check-in sécurité et exclu pour des raisons de confidentialité. La plateforme stocke la localisation uniquement sous forme de nom de ville ou de chaîne d'adresse. La localisation en temps réel doit utiliser les outils de confiance existants du prestataire (iOS Localiser, Signal) plutôt que d'être stockée dans le CRM.">
+        Live GPS location sharing was considered for the safety check-in feature and excluded on privacy grounds. Location is stored as a city name or address string only.
+      </span>
+    </div>
+  </section>
+
+  <!-- ── S7: BUSINESS MODEL ────────────────────────────────── -->
+  <section class="section" id="s7">
+    <div class="section-num" data-en="Section 07" data-fr="Section 07">Section 07</div>
+    <h2 data-en="Business Model & Scaling" data-fr="Modèle Économique & Croissance">Business Model & Scaling</h2>
+
+    <h3 data-en="Estimated monthly operating costs" data-fr="Coûts d'exploitation mensuels estimés">Estimated monthly operating costs</h3>
+    <table>
+      <tr><th data-en="Item" data-fr="Poste">Item</th><th data-en="Now (2–10 users)" data-fr="Maintenant (2–10 utilisateurs)">Now (2–10 users)</th><th data-en="Phase 2 (50+ users)" data-fr="Phase 2 (50+ utilisateurs)">Phase 2 (50+ users)</th></tr>
+      <tr><td data-en="Vercel hosting" data-fr="Hébergement Vercel">Vercel hosting</td><td>€0 (free tier)</td><td>~€20</td></tr>
+      <tr><td data-en="Supabase database" data-fr="Base de données Supabase">Supabase database</td><td>€0 (free tier)</td><td>€25</td></tr>
+      <tr><td data-en="WhatsApp bridge server" data-fr="Serveur pont WhatsApp">WhatsApp bridge server</td><td>~€20</td><td>~€50</td></tr>
+      <tr><td data-en="360dialog (when adopted)" data-fr="360dialog (quand adopté)">360dialog (partner rate)</td><td>€0</td><td>€10/number</td></tr>
+      <tr><td data-en="Payment processing (CCBill/SEPA)" data-fr="Traitement des paiements (CCBill/SEPA)">Payment processing</td><td>€0</td><td>~10–15% of revenue</td></tr>
+      <tr><td><strong data-en="Total estimate" data-fr="Total estimé">Total estimate</strong></td><td><strong>~€20/month</strong></td><td><strong>~€100–200/month</strong></td></tr>
+    </table>
+
+    <h3 data-en="WhatsApp cost scaling" data-fr="Coûts WhatsApp à l'échelle">WhatsApp cost scaling</h3>
+    <table>
+      <tr><th data-en="Users" data-fr="Utilisateurs">Users</th><th data-en="QR Bridge" data-fr="Pont QR">QR Bridge</th><th data-en="360dialog (direct)" data-fr="360dialog (direct)">360dialog (direct)</th><th data-en="360dialog (partner)" data-fr="360dialog (partenaire)">360dialog (partner)</th></tr>
+      <tr><td>5</td><td>€20/mo</td><td>€245/mo</td><td>€50/mo</td></tr>
+      <tr><td>10</td><td>€20/mo</td><td>€490/mo</td><td>€100/mo</td></tr>
+      <tr><td>50</td><td>~€100/mo</td><td>€2,450/mo</td><td>€500/mo</td></tr>
+    </table>
+
+    <div class="callout callout-decision">
+      <div class="callout-label" data-en="Scaling trigger" data-fr="Déclencheur de mise à l'échelle">Scaling trigger</div>
+      <span data-en="Move from QR bridge to 360dialog partner programme when individual number bans become a meaningful operational problem. Estimated trigger point: 200+ active users or first enterprise partnership discussion. Apply for 360dialog partner status in advance of this threshold." data-fr="Passer du pont QR au programme partenaire 360dialog lorsque les bannissements de numéros individuels deviennent un problème opérationnel significatif. Point de déclenchement estimé : 200+ utilisateurs actifs ou première discussion de partenariat d'entreprise. Faire une demande pour le statut de partenaire 360dialog avant ce seuil.">
+        Move from QR bridge to 360dialog partner programme when individual number bans become a meaningful operational problem. Estimated trigger: 200+ active users.
+      </span>
+    </div>
+  </section>
+
+  <!-- ── S8: OUTSTANDING ───────────────────────────────────── -->
+  <section class="section" id="s8">
+    <div class="section-num" data-en="Section 08" data-fr="Section 08">Section 08</div>
+    <h2 data-en="Outstanding Decisions" data-fr="Décisions en Suspens">Outstanding Decisions</h2>
+
+    <table>
+      <tr>
+        <th data-en="Decision" data-fr="Décision">Decision</th>
+        <th data-en="Status" data-fr="Statut">Status</th>
+        <th data-en="Notes" data-fr="Notes">Notes</th>
+      </tr>
+      <tr>
+        <td data-en="Merge codebases (Lovable UI + Clare backend)" data-fr="Fusion des bases de code (UI Lovable + backend Clare)">Merge codebases</td>
+        <td><span class="warn" data-en="Pending" data-fr="En attente">⏳ Pending</span></td>
+        <td data-en="Export Lovable code first, then add integrations" data-fr="Exporter le code Lovable d'abord, puis ajouter les intégrations">Export Lovable code first</td>
+      </tr>
+      <tr>
+        <td data-en="Dedicated business number (US/UK)" data-fr="Numéro professionnel dédié (US/UK)">Dedicated business number</td>
+        <td><span class="warn" data-en="Pending" data-fr="En attente">⏳ Pending</span></td>
+        <td data-en="US preferred, UK fallback. eSIM for shared access." data-fr="US préféré, UK en secours. eSIM pour accès partagé.">US preferred, UK fallback. eSIM for shared access.</td>
+      </tr>
+      <tr>
+        <td data-en="Host QR bridge on server (not Clare's laptop)" data-fr="Héberger le pont QR sur serveur (pas le laptop de Clare)">Host QR bridge</td>
+        <td><span class="warn" data-en="Pending" data-fr="En attente">⏳ Pending</span></td>
+        <td data-en="Railway or Fly.io. Required before inviting second user." data-fr="Railway ou Fly.io. Nécessaire avant d'inviter un deuxième utilisateur.">Railway or Fly.io</td>
+      </tr>
+      <tr>
+        <td data-en="Payment processor selection" data-fr="Sélection du processeur de paiement">Payment processor</td>
+        <td><span class="warn" data-en="Pending" data-fr="En attente">⏳ Pending</span></td>
+        <td data-en="SEPA + CCBill/Segpay + crypto. Do not use Stripe." data-fr="SEPA + CCBill/Segpay + crypto. Ne pas utiliser Stripe.">SEPA + CCBill. Not Stripe.</td>
+      </tr>
+      <tr>
+        <td data-en="Security consultant engagement" data-fr="Engagement d'un consultant en sécurité">Security consultant</td>
+        <td><span class="warn" data-en="Pending" data-fr="En attente">⏳ Pending</span></td>
+        <td data-en="Before any public launch. Not a full CTO at this stage." data-fr="Avant tout lancement public. Pas un CTO complet à ce stade.">Before public launch</td>
+      </tr>
+      <tr>
+        <td data-en="Formspree ID for coaching contact form" data-fr="ID Formspree pour le formulaire de contact coaching">Formspree ID (coaching site)</td>
+        <td><span class="warn" data-en="Pending" data-fr="En attente">⏳ Pending</span></td>
+        <td data-en="Sign up at formspree.io, paste ID into coaching/index.html" data-fr="S'inscrire sur formspree.io, coller l'ID dans coaching/index.html">formspree.io signup needed</td>
+      </tr>
+      <tr>
+        <td data-en="LEADS_FORM_ORIGIN CORS lock-down" data-fr="Verrouillage CORS LEADS_FORM_ORIGIN">CORS lock-down</td>
+        <td><span class="warn" data-en="Pending" data-fr="En attente">⏳ Pending</span></td>
+        <td>Add <code>LEADS_FORM_ORIGIN=https://yes-mistress.github.io</code> in Vercel env vars</td>
+      </tr>
+      <tr>
+        <td data-en="Database migration: phone nullable" data-fr="Migration base de données : téléphone nullable">DB migration: phone nullable</td>
+        <td><span class="tick" data-en="Done" data-fr="Fait">✓ Done</span></td>
+        <td data-en="Run in Supabase SQL Editor" data-fr="Exécuté dans l'éditeur SQL Supabase">Completed</td>
+      </tr>
+      <tr>
+        <td data-en="Database migrations: form fields" data-fr="Migrations base de données : champs de formulaire">DB migrations: form fields</td>
+        <td><span class="tick" data-en="Done" data-fr="Fait">✓ Done</span></td>
+        <td data-en="form_token, form_tagline, form_bio, form_header_image, bridge_queue, connection_type" data-fr="form_token, form_tagline, form_bio, form_header_image, bridge_queue, connection_type">Completed</td>
+      </tr>
+    </table>
+  </section>
+
+</div><!-- /wrapper -->
+
+<script>
+function setLang(lang) {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['en','fr'][i] === lang);
+  });
+
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const key = lang === 'fr' ? 'fr' : 'en';
+    if (el.dataset[key]) el.textContent = el.dataset[key];
+  });
+}
+</script>
+</body>
+</html>
