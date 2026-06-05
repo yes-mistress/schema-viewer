@@ -13,50 +13,85 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 24px;
+    padding: 48px 24px;
   }
 
-  .hub {
-    max-width: 700px;
-    width: 100%;
-  }
+  .hub { max-width: 720px; width: 100%; }
 
+  /* ── Nav ─────────────────────────────────── */
+  .topbar {
+    display: flex; justify-content: flex-end;
+    margin-bottom: 48px;
+    gap: 4px;
+  }
+  .lang-btn {
+    padding: 4px 12px; border-radius: 6px;
+    border: 1px solid #30363d;
+    background: transparent; color: #8b949e;
+    font-size: 12px; cursor: pointer; transition: all 0.15s;
+    font-family: inherit;
+  }
+  .lang-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+  .lang-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+
+  /* ── Header ──────────────────────────────── */
   .label {
     font-size: 11px; font-weight: 600;
     letter-spacing: 0.14em; text-transform: uppercase;
     color: #58a6ff; margin-bottom: 12px;
   }
-
   h1 {
-    font-size: 28px; font-weight: 700;
+    font-size: 30px; font-weight: 700;
     line-height: 1.2; letter-spacing: -0.02em;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
-
   .subtitle {
     font-size: 15px; color: #8b949e;
-    line-height: 1.6; margin-bottom: 8px;
+    line-height: 1.65; margin-bottom: 32px;
+    max-width: 620px;
   }
 
-  .context {
-    font-size: 13px; color: #484f58;
-    margin-bottom: 40px;
-    padding-bottom: 32px;
-    border-bottom: 1px solid #21262d;
+  /* ── Context box ─────────────────────────── */
+  .context-box {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+  .context-box h2 {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: #484f58; margin-bottom: 14px;
+  }
+  .context-box p {
+    font-size: 13px; color: #8b949e;
+    line-height: 1.7; margin-bottom: 10px;
+  }
+  .context-box p:last-child { margin-bottom: 0; }
+  .context-box ul { padding-left: 18px; margin-top: 6px; }
+  .context-box li {
+    font-size: 13px; color: #8b949e;
+    margin-bottom: 5px; line-height: 1.55;
+  }
+  strong.hi { color: #c9d1d9; }
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: #21262d; padding: 1px 5px;
+    border-radius: 4px; color: #c9d1d9;
   }
 
-  .context strong { color: #6e7681; }
-
-  /* ── Cards ─────────────────────────────────── */
+  /* ── Cards ───────────────────────────────── */
   .cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 12px;
   }
-
   .card {
     display: block;
     background: #161b22;
@@ -66,186 +101,180 @@
     text-decoration: none;
     color: inherit;
     transition: border-color 0.15s, background 0.15s;
-    cursor: pointer;
   }
-  .card:hover {
-    border-color: #58a6ff66;
-    background: #1c2128;
-  }
-
-  .card-icon {
-    font-size: 22px; margin-bottom: 12px;
-  }
-
-  .card-title {
-    font-size: 15px; font-weight: 600;
-    margin-bottom: 6px; color: #e6edf3;
-  }
-
-  .card-desc {
-    font-size: 13px; color: #8b949e;
-    line-height: 1.5;
-  }
-
+  .card:hover { border-color: #58a6ff66; background: #1c2128; }
+  .card-icon { font-size: 20px; margin-bottom: 10px; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #e6edf3; }
+  .card-desc { font-size: 12px; color: #8b949e; line-height: 1.55; }
   .card-tag {
-    display: inline-block;
-    margin-top: 10px;
-    font-size: 10px; font-weight: 600;
+    display: inline-block; margin-top: 10px;
+    font-size: 10px; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase;
     padding: 2px 7px; border-radius: 20px;
   }
-
-  .tag-read   { background: #58a6ff22; color: #58a6ff; }
+  .tag-read     { background: #58a6ff22; color: #58a6ff; }
   .tag-interact { background: #bc8cff22; color: #bc8cff; }
-  .tag-download { background: #3fb95022; color: #3fb950; }
+  .tag-dl       { background: #3fb95022; color: #3fb950; }
+  .card-wide { grid-column: 1 / -1; }
 
-  /* Full-width card */
-  .card-wide {
-    grid-column: 1 / -1;
-  }
-
-  /* ── Context box ─────────────────────────── */
-  .context-box {
-    background: #161b22;
-    border: 1px solid #21262d;
-    border-radius: 10px;
-    padding: 20px 24px;
+  /* ── Downloads row ───────────────────────── */
+  .dl-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
     margin-bottom: 24px;
   }
-
-  .context-box h2 {
-    font-size: 12px; font-weight: 600;
+  .dl-card {
+    display: block;
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s;
+  }
+  .dl-card:hover { border-color: #3fb95066; }
+  .dl-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+  }
+  .dl-icon { font-size: 16px; }
+  .dl-title { font-size: 13px; font-weight: 600; color: #e6edf3; }
+  .dl-meta { font-size: 11px; color: #484f58; margin-bottom: 6px; }
+  .dl-desc { font-size: 12px; color: #8b949e; line-height: 1.5; }
+  .dl-badge {
+    display: inline-block; margin-top: 8px;
+    font-size: 9px; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase;
-    color: #484f58; margin-bottom: 14px;
-  }
-
-  .context-box p {
-    font-size: 13px; color: #8b949e;
-    line-height: 1.7; margin-bottom: 10px;
-  }
-
-  .context-box p:last-child { margin-bottom: 0; }
-
-  .context-box ul {
-    padding-left: 18px; margin-top: 8px;
-  }
-
-  .context-box li {
-    font-size: 13px; color: #8b949e;
-    margin-bottom: 5px; line-height: 1.5;
-  }
-
-  .context-box code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    background: #21262d;
-    padding: 1px 5px; border-radius: 4px;
-    color: #c9d1d9;
+    padding: 2px 6px; border-radius: 3px;
+    background: #3fb95015; color: #3fb950;
+    border: 1px solid #3fb95030;
   }
 
   /* ── Questions ───────────────────────────── */
   .questions {
-    background: #1f2937;
-    border: 1px solid #1f6feb44;
+    background: #161b22;
+    border: 1px solid #1f6feb33;
     border-radius: 10px;
     padding: 20px 24px;
-    margin-top: 24px;
+    margin-bottom: 32px;
   }
-
   .questions h2 {
-    font-size: 12px; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
     color: #58a6ff; margin-bottom: 14px;
   }
-
-  .questions ol {
-    padding-left: 20px;
-  }
-
+  .questions ol { padding-left: 20px; }
   .questions li {
-    font-size: 14px; color: #c9d1d9;
-    margin-bottom: 8px; line-height: 1.6;
+    font-size: 13px; color: #c9d1d9;
+    margin-bottom: 9px; line-height: 1.6;
   }
 
   /* ── Footer ──────────────────────────────── */
   .footer {
-    margin-top: 32px;
-    font-size: 12px; color: #30363d;
-    text-align: center;
+    font-size: 11px; color: #30363d;
+    text-align: center; margin-top: 8px;
   }
 
   @media (max-width: 520px) {
-    .cards { grid-template-columns: 1fr; }
+    .cards, .dl-row { grid-template-columns: 1fr; }
     .card-wide { grid-column: auto; }
     h1 { font-size: 22px; }
   }
 </style>
 </head>
 <body>
-
 <div class="hub">
 
-  <div class="label">Developer Briefing — June 2026</div>
-  <h1>Sextech CRM Platform<br>Technical Review</h1>
-  <p class="subtitle">An independent escort and dominatrix CRM built as a multi-tenant SaaS. This hub contains the strategy report, interactive schema diagrams, and a sample data export.</p>
-  <p class="context"><strong>Context:</strong> Two parallel builds exist — one built with Claude (Next.js + Supabase + Vercel, ~40hrs) and one built on Lovable (also Supabase-backed). The goal is to merge the better UI of the Lovable build with the stronger infrastructure of the custom build. Advice is sought on architecture, WhatsApp integration strategy, and security.</p>
-
-  <!-- ── Context box ─────────────────────────────────── -->
-  <div class="context-box">
-    <h2>Tech stack</h2>
-    <p><strong style="color:#c9d1d9">Custom build:</strong> Next.js 16 · TypeScript · Supabase (PostgreSQL + Auth + RLS) · Vercel · Baileys (WhatsApp QR bridge)</p>
-    <p><strong style="color:#c9d1d9">Lovable build:</strong> Lovable (React) · Supabase · Vercel</p>
-    <p><strong style="color:#c9d1d9">Key constraints:</strong></p>
-    <ul>
-      <li>Meta/WhatsApp is a platform risk — official API creates visibility with Meta, which has deplatformed sextech firms</li>
-      <li>Stripe and PayPal typically refuse sex work adjacent businesses</li>
-      <li>GDPR applies — users are in France and Switzerland, data is sensitive</li>
-      <li>FOSTA-SESTA creates US payment processor exposure</li>
-      <li>WhatsApp integration must be seamless for end users from day one (non-negotiable requirement)</li>
-    </ul>
+  <!-- Language toggle -->
+  <div class="topbar">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('fr')">FR</button>
   </div>
 
-  <!-- ── Resource cards ─────────────────────────────── -->
-  <div class="cards">
+  <!-- Header -->
+  <div class="label" data-en="Developer Briefing — June 2026" data-fr="Dossier Technique — Juin 2026">Developer Briefing — June 2026</div>
+  <h1 data-en="Sextech CRM Platform — Technical Review" data-fr="Plateforme CRM Sextech — Revue Technique">Sextech CRM Platform — Technical Review</h1>
+  <p class="subtitle" data-en="A multi-tenant SaaS CRM built for independent sex workers — escorts and dominatrices. This hub contains the strategy report, interactive schema diagrams, and anonymised data exports from both builds." data-fr="Un CRM SaaS multi-tenant conçu pour les travailleuses du sexe indépendantes — escortes et dominatrices. Ce hub contient le rapport stratégique, les diagrammes de schéma interactifs, et les exports de données anonymisés des deux builds.">A multi-tenant SaaS CRM built for independent sex workers — escorts and dominatrices. This hub contains the strategy report, interactive schema diagrams, and anonymised data exports from both builds.</p>
 
+  <!-- Context -->
+  <div class="context-box">
+    <h2 data-en="Context" data-fr="Contexte">Context</h2>
+    <p data-en="Two parallel builds exist and need to be merged:" data-fr="Deux builds parallèles existent et doivent être fusionnés :">Two parallel builds exist and need to be merged:</p>
+    <ul>
+      <li data-en="Clare's build — custom Next.js 16 + TypeScript + Supabase + Vercel (~40hrs). Stronger infrastructure: WhatsApp bridge (Baileys), multi-tenant RLS, automations, flows, practices system, lead form API." data-fr="Build de Clare — Next.js 16 personnalisé + TypeScript + Supabase + Vercel (~40h). Infrastructure plus solide : pont WhatsApp (Baileys), RLS multi-tenant, automatisations, flux, système de pratiques, API de formulaire de leads.">Clare's build — custom Next.js 16 + TypeScript + Supabase + Vercel (~40hrs). Stronger infrastructure: WhatsApp bridge (Baileys), multi-tenant RLS, automations, flows, practices system, lead form API.</li>
+      <li data-en="Josephine's build — Lovable (React) + Supabase. Superior UI: better dashboard, pipeline forecasting, safety check-in workflow, richer contact fields." data-fr="Build de Josephine — Lovable (React) + Supabase. Interface supérieure : meilleur tableau de bord, prévisions du pipeline, workflow de check-in sécurité, champs de contact plus riches.">Josephine's build — Lovable (React) + Supabase. Superior UI: better dashboard, pipeline forecasting, safety check-in workflow, richer contact fields.</li>
+    </ul>
+    <p style="margin-top:12px" data-en="Key constraints: Meta visibility risk for sextech, Stripe and PayPal typically refuse the industry, GDPR applies (France + Switzerland users), WhatsApp must work seamlessly from day one." data-fr="Contraintes clés : risque de visibilité Meta pour le sextech, Stripe et PayPal refusent généralement l'industrie, le RGPD s'applique (utilisateurs France + Suisse), WhatsApp doit fonctionner de manière fluide dès le premier jour.">Key constraints: Meta visibility risk for sextech, Stripe and PayPal typically refuse the industry, GDPR applies (France + Switzerland users), WhatsApp must work seamlessly from day one.</p>
+  </div>
+
+  <!-- Main resource cards -->
+  <div class="cards">
     <a href="report.html" class="card">
       <div class="card-icon">📄</div>
-      <div class="card-title">Strategy Report</div>
-      <div class="card-desc">Full advisory covering platform decision, WhatsApp integration, payments, schema, feature priorities, security, and business model. Available in English and French.</div>
-      <span class="card-tag tag-read">Read</span>
+      <div class="card-title" data-en="Strategy Report" data-fr="Rapport Stratégique">Strategy Report</div>
+      <div class="card-desc" data-en="Full advisory covering platform decision, WhatsApp options, payment constraints, schema analysis, sprint priorities, security, and business model." data-fr="Conseil complet couvrant la décision de plateforme, les options WhatsApp, les contraintes de paiement, l'analyse du schéma, les priorités de sprint, la sécurité et le modèle économique.">Full advisory covering platform decision, WhatsApp options, payment constraints, schema analysis, sprint priorities, security, and business model.</div>
+      <span class="card-tag tag-read" data-en="Read · EN / FR" data-fr="Lire · EN / FR">Read · EN / FR</span>
     </a>
 
     <a href="schema.html" class="card">
       <div class="card-icon">⬡</div>
-      <div class="card-title">Schema Viewer</div>
-      <div class="card-desc">Interactive diagram of both database schemas — Clare's custom build and Josephine's Lovable build — with a merged comparison view. Drag tables, click to highlight relations.</div>
-      <span class="card-tag tag-interact">Interactive</span>
+      <div class="card-title" data-en="Schema Viewer" data-fr="Visualiseur de Schéma">Schema Viewer</div>
+      <div class="card-desc" data-en="Interactive diagram of both database schemas with a merged comparison view. Drag tables, click to highlight relations, zoom and pan." data-fr="Diagramme interactif des deux schémas de base de données avec une vue comparative fusionnée. Déplacez les tables, cliquez pour mettre en évidence les relations.">Interactive diagram of both database schemas with a merged comparison view. Drag tables, click to highlight relations, zoom and pan.</div>
+      <span class="card-tag tag-interact" data-en="Interactive" data-fr="Interactif">Interactive</span>
     </a>
-
-    <a href="crm-schema-sample.json" download class="card card-wide">
-      <div class="card-icon">⬇</div>
-      <div class="card-title">Sample Data Export — Josephine's CRM (JSON)</div>
-      <div class="card-desc">Anonymised export from the Lovable build. Contains 4 contacts, 20 opportunities, and 3 services with realistic field values. All names and phone numbers are fictitious. Shows the exact schema in use including probability weighting, service snapshots, and status vocabulary.</div>
-      <span class="card-tag tag-download">Download · JSON · ~20kb</span>
-    </a>
-
   </div>
 
-  <!-- ── Questions ──────────────────────────────────── -->
+  <!-- Download cards -->
+  <div class="dl-row">
+    <a href="crm-schema-clare.json" download class="dl-card">
+      <div class="dl-header">
+        <span class="dl-icon">⬇</span>
+        <span class="dl-title" data-en="Clare's CRM — Data Export" data-fr="CRM de Clare — Export de Données">Clare's CRM — Data Export</span>
+      </div>
+      <div class="dl-meta" data-en="Next.js + Supabase · JSON · 29 contacts, 4 deals, 5 services" data-fr="Next.js + Supabase · JSON · 29 contacts, 4 deals, 5 services">Next.js + Supabase · JSON · 29 contacts, 4 deals, 5 services</div>
+      <div class="dl-desc" data-en="Custom build schema. Shows pipeline stages, deal fields (discount, tip, location type, practices), services, and WhatsApp config structure." data-fr="Schéma du build personnalisé. Montre les étapes du pipeline, les champs des deals (remise, pourboire, type de lieu, pratiques), les services et la structure de configuration WhatsApp.">Custom build schema. Shows pipeline stages, deal fields (discount, tip, location type), services, and WhatsApp config structure.</div>
+      <span class="dl-badge" data-en="Anonymised" data-fr="Anonymisé">Anonymised</span>
+    </a>
+
+    <a href="crm-schema-sample.json" download class="dl-card">
+      <div class="dl-header">
+        <span class="dl-icon">⬇</span>
+        <span class="dl-title" data-en="Josephine's CRM — Data Export" data-fr="CRM de Josephine — Export de Données">Josephine's CRM — Data Export</span>
+      </div>
+      <div class="dl-meta" data-en="Lovable + Supabase · JSON · 4 contacts, 20 opportunities, 3 services" data-fr="Lovable + Supabase · JSON · 4 contacts, 20 opportunités, 3 services">Lovable + Supabase · JSON · 4 contacts, 20 opportunities, 3 services</div>
+      <div class="dl-desc" data-en="Lovable build schema. Shows richer contact fields (nickname/fake_name/real_name, seriousness, quality), probability-weighted opportunities, and safety contacts." data-fr="Schéma du build Lovable. Montre des champs de contact plus riches (nickname/fake_name/real_name, seriousness, quality), des opportunités pondérées par probabilité et les contacts de sécurité.">Lovable build schema. Shows richer contact fields (nickname/fake_name/real_name, seriousness, quality), probability-weighted opportunities, and safety contacts.</div>
+      <span class="dl-badge" data-en="Anonymised" data-fr="Anonymisé">Anonymised</span>
+    </a>
+  </div>
+
+  <!-- Questions -->
   <div class="questions">
-    <h2>We are asking</h2>
+    <h2 data-en="What we are asking" data-fr="Ce que nous demandons">What we are asking</h2>
     <ol>
-      <li>Is the QR bridge approach (Baileys / WhatsApp Web) a defensible long-term architecture, or a liability we should plan to replace?</li>
-      <li>What is the right sequence for merging the Lovable frontend with the existing custom backend — export Lovable code first, then integrate, or rebuild the UI on the custom stack?</li>
-      <li>What security or privacy gaps are we missing given the sensitivity of this data and the population it serves?</li>
-      <li>Are there WhatsApp integration approaches we have not considered that give seamless UX without Meta visibility?</li>
-      <li>Given the payment processor constraints, what billing infrastructure would you design for a European sextech SaaS at this stage?</li>
+      <li data-en="Is the QR bridge approach (Baileys / WhatsApp Web) defensible long-term, or a liability to plan to replace?" data-fr="L'approche pont QR (Baileys / WhatsApp Web) est-elle défendable à long terme, ou une responsabilité à prévoir de remplacer ?">Is the QR bridge approach (Baileys / WhatsApp Web) defensible long-term, or a liability to plan to replace?</li>
+      <li data-en="What is the right sequence for merging the Lovable frontend with the existing custom backend?" data-fr="Quelle est la bonne séquence pour fusionner le frontend Lovable avec le backend personnalisé existant ?">What is the right sequence for merging the Lovable frontend with the existing custom backend?</li>
+      <li data-en="What security or privacy gaps are we missing given the sensitivity of this data and the population it serves?" data-fr="Quelles lacunes en matière de sécurité ou de confidentialité manquons-nous, compte tenu de la sensibilité de ces données ?">What security or privacy gaps are we missing given the sensitivity of this data?</li>
+      <li data-en="Are there WhatsApp integration approaches we have not considered that give seamless UX without Meta visibility?" data-fr="Existe-t-il des approches d'intégration WhatsApp que nous n'avons pas envisagées offrant une UX fluide sans visibilité Meta ?">Are there WhatsApp integration approaches not considered that give seamless UX without Meta visibility?</li>
+      <li data-en="Given the payment processor constraints, what billing infrastructure would you design for a European sextech SaaS at this stage?" data-fr="Compte tenu des contraintes des processeurs de paiement, quelle infrastructure de facturation concevriez-vous pour un SaaS sextech européen à ce stade ?">Given payment processor constraints, what billing infrastructure would you design for a European sextech SaaS?</li>
     </ol>
   </div>
 
-  <div class="footer">Confidential — shared for technical advisory purposes only</div>
+  <div class="footer" data-en="Confidential — shared for technical advisory purposes only" data-fr="Confidentiel — partagé à des fins de conseil technique uniquement">Confidential — shared for technical advisory purposes only</div>
 
 </div>
 
+<script>
+function setLang(lang) {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['en','fr'][i] === lang);
+  });
+  document.querySelectorAll('[data-en]').forEach(el => {
+    el.textContent = lang === 'fr' ? (el.dataset.fr || el.dataset.en) : el.dataset.en;
+  });
+}
+</script>
 </body>
 </html>
